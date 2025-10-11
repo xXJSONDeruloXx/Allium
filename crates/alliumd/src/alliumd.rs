@@ -72,15 +72,16 @@ impl AlliumDState {
                             this.time.format("%F %T")
                         );
                         let mut date = std::process::Command::new("date")
-                            .arg("-s")
-                            .arg(this.time.format("%F %T").to_string())
-                            .spawn()?;
-                        let mut hwclock = std::process::Command::new("/sbin/hwclock")
-                            .arg("-w")
-                            .arg("-u")
+                            .arg("--utc")
+                            .arg("--set")
                             .arg(this.time.format("%F %T").to_string())
                             .spawn()?;
                         date.wait()?;
+                        let mut hwclock = std::process::Command::new("/sbin/hwclock")
+                            .arg("--systohc")
+                            .arg("--utc")
+                            .arg(this.time.format("%F %T").to_string())
+                            .spawn()?;
                         hwclock.wait()?;
                     }
                     return Ok(this);

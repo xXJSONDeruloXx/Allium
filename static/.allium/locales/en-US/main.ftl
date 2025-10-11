@@ -51,6 +51,7 @@ settings-display-screen-resolution = Screen Resolution
 settings-theme = Theme
 settings-theme-dark-mode = Dark Mode
 settings-theme-show-battery-level = Battery Percentage
+settings-theme-show-clock = Clock
 settings-theme-ui-font = UI Font
 settings-theme-ui-font-size = UI Font Size
 settings-theme-guide-font = Guide Font

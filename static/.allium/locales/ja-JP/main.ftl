@@ -49,6 +49,7 @@ settings-display-screen-resolution = 画面解像度
 settings-theme = テーマ
 settings-theme-dark-mode = ダークモード
 settings-theme-show-battery-level = バッテリー残
+settings-theme-show-clock = 時計
 settings-theme-ui-font = UIフォント
 settings-theme-ui-font-size = UIフォントサイズ
 settings-theme-guide-font = ガイドフォント

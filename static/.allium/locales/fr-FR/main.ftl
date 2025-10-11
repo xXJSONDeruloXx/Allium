@@ -49,6 +49,7 @@ settings-display-screen-resolution = Résolution écran
 settings-theme = Thème
 settings-theme-dark-mode = Mode sombre
 settings-theme-show-battery-level = Pourcentage de batterie
+settings-theme-show-clock = Horloge
 settings-theme-ui-font = UI: Police
 settings-theme-ui-font-size = UI: Taille de police
 settings-theme-guide-font = Guide: Police

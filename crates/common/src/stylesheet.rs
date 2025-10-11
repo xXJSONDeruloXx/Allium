@@ -128,6 +128,7 @@ pub struct Stylesheet {
     pub wallpaper: Option<PathBuf>,
     pub enable_box_art: bool,
     pub show_battery_level: bool,
+    pub show_clock: bool,
     #[serde(default = "Stylesheet::default_foreground_color")]
     pub foreground_color: Color,
     #[serde(default = "Stylesheet::default_background_color")]
@@ -263,6 +264,10 @@ impl Stylesheet {
 
     pub fn toggle_battery_percentage(&mut self) {
         self.show_battery_level = !self.show_battery_level;
+    }
+
+    pub fn toggle_clock(&mut self) {
+        self.show_clock = !self.show_clock;
     }
 
     #[inline]
@@ -423,6 +428,7 @@ impl Default for Stylesheet {
             wallpaper: None,
             enable_box_art: true,
             show_battery_level: false,
+            show_clock: true,
             foreground_color: Self::default_foreground_color(),
             background_color: Self::default_background_color(),
             highlight_color: Self::default_highlight_color(),

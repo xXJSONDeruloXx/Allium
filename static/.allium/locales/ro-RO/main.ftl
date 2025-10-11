@@ -49,6 +49,7 @@ settings-display-screen-resolution = Rezoluția ecranului
 settings-theme = Temă
 settings-theme-dark-mode = Modul întunecat
 settings-theme-show-battery-level = Procentajul bateriei
+settings-theme-show-clock = Ceas
 settings-theme-ui-font = Font UI
 settings-theme-ui-font-size = Dimensiune Font UI
 settings-theme-guide-font = Font Ghid

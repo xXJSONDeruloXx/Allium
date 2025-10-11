@@ -71,11 +71,16 @@ where
             styles.show_battery_level,
         );
 
-        let clock = Clock::new(res.clone(), Point::new(0, 0), Alignment::Right);
+        let mut children: Vec<Box<dyn View>> = vec![Box::new(battery_indicator)];
+
+        if styles.show_clock {
+            let clock = Clock::new(res.clone(), Point::new(0, 0), Alignment::Right);
+            children.push(Box::new(clock));
+        }
 
         let row: Row<Box<dyn View>> = Row::new(
             Point::new(w as i32 - 12, y + 8),
-            vec![Box::new(battery_indicator), Box::new(clock)],
+            children,
             Alignment::Right,
             8,
         );

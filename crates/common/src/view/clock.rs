@@ -11,23 +11,24 @@ use crate::constants::CLOCK_UPDATE_INTERVAL;
 use crate::display::Display;
 use crate::geom::{Alignment, Point, Rect};
 use crate::platform::{DefaultPlatform, KeyEvent, Platform};
+use crate::resources::Resources;
 use crate::stylesheet::Stylesheet;
 use crate::view::{Command, Label, View};
 
 #[derive(Debug, Clone)]
 pub struct Clock {
     label: Label<String>,
-    point: Point,
     last_updated: Instant,
 }
 
 impl Clock {
-    pub fn new(point: Point, alignment: Alignment) -> Self {
-        let label = Label::new(point, text(), alignment, None);
+    pub fn new(res: Resources, point: Point, alignment: Alignment) -> Self {
+        let styles = res.get::<Stylesheet>();
+        let mut label = Label::new(point, text(), alignment, None);
+        label.font_size(styles.status_bar_font_size);
 
         Self {
             label,
-            point,
             last_updated: Instant::now(),
         }
     }
@@ -81,7 +82,6 @@ impl View for Clock {
     }
 
     fn set_position(&mut self, point: Point) {
-        self.point = point;
         self.label.set_position(point);
     }
 }

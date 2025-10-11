@@ -271,6 +271,9 @@ where
 
     fn set_position(&mut self, point: Point) {
         self.point = point;
+        if let Some(ref mut label) = self.label {
+            label.set_position(point);
+        }
     }
 }
 

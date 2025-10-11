@@ -282,7 +282,7 @@ impl SimulatorBattery {
     pub fn new() -> SimulatorBattery {
         SimulatorBattery {
             percentage: 100,
-            charging: false,
+            charging: true,
         }
     }
 }

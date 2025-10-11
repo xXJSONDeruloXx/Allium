@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -123,14 +124,18 @@ impl<V> View for Row<V>
 where
     V: View,
 {
+    fn update(&mut self, dt: Duration) {
+        for child in self.children_mut() {
+            child.update(dt);
+        }
+    }
+
     fn draw(
         &mut self,
         display: &mut <DefaultPlatform as Platform>::Display,
         styles: &Stylesheet,
     ) -> Result<bool> {
-        if !self.has_layout {
-            self.layout(styles);
-        }
+        self.layout(styles);
 
         let mut drawn = false;
 
@@ -180,10 +185,7 @@ where
     }
 
     fn bounding_box(&mut self, styles: &Stylesheet) -> Rect {
-        if !self.has_layout {
-            self.layout(styles);
-        }
-
+        self.layout(styles);
         self.children
             .iter_mut()
             .map(|c| c.bounding_box(styles))

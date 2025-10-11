@@ -1,6 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::fs;
 use std::fs::File;
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
 use anyhow::Result;
@@ -20,8 +21,8 @@ use common::resources::Resources;
 use common::retroarch::RetroArchCommand;
 use common::stylesheet::Stylesheet;
 use common::view::{
-    BatteryIndicator, ButtonHint, ButtonIcon, Image, ImageMode, Label, NullView, Row, SettingsList,
-    View,
+    BatteryIndicator, ButtonHint, ButtonIcon, Clock, Image, ImageMode, Label, NullView, Row,
+    SettingsList, View,
 };
 use log::warn;
 use serde::{Deserialize, Serialize};
@@ -43,7 +44,7 @@ where
     rect: Rect,
     res: Resources,
     name: Label<String>,
-    battery_indicator: BatteryIndicator<B>,
+    row: Row<Box<dyn View>>,
     menu: SettingsList,
     child: Option<TextReader>,
     button_hints: Row<ButtonHint<String>>,
@@ -52,6 +53,7 @@ where
     path: PathBuf,
     image: Image,
     dirty: bool,
+    _phantom_battery: PhantomData<B>,
 }
 
 impl<B> IngameMenu<B>
@@ -80,9 +82,23 @@ where
 
         let battery_indicator = BatteryIndicator::new(
             res.clone(),
-            Point::new(w as i32 - 12, y + 8),
+            Point::new(0, 0),
             battery,
             styles.show_battery_level,
+        );
+
+        let mut children: Vec<Box<dyn View>> = vec![Box::new(battery_indicator)];
+
+        if styles.show_clock {
+            let clock = Clock::new(res.clone(), Point::new(0, 0), Alignment::Right);
+            children.push(Box::new(clock));
+        }
+
+        let row: Row<Box<dyn View>> = Row::new(
+            Point::new(w as i32 - 12, y + 8),
+            children,
+            Alignment::Right,
+            8,
         );
 
         let entries = MenuEntry::entries(&retroarch_info);
@@ -171,7 +187,7 @@ where
             rect,
             res,
             name,
-            battery_indicator,
+            row,
             menu,
             child,
             button_hints,
@@ -180,6 +196,7 @@ where
             path,
             image,
             dirty: false,
+            _phantom_battery: PhantomData,
         }
     }
 
@@ -354,8 +371,7 @@ where
             drawn |= child.should_draw() && child.draw(display, styles)?;
         } else {
             drawn |= self.name.should_draw() && self.name.draw(display, styles)?;
-            drawn |= self.battery_indicator.should_draw()
-                && self.battery_indicator.draw(display, styles)?;
+            drawn |= self.row.should_draw() && self.row.draw(display, styles)?;
             drawn |= self.menu.should_draw() && self.menu.draw(display, styles)?;
             drawn |= self.image.should_draw() && self.image.draw(display, styles)?;
             drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
@@ -370,7 +386,7 @@ where
         } else {
             self.dirty
                 || self.name.should_draw()
-                || self.battery_indicator.should_draw()
+                || self.row.should_draw()
                 || self.menu.should_draw()
                 || self.button_hints.should_draw()
         }
@@ -382,7 +398,7 @@ where
             child.set_should_draw();
         } else {
             self.name.set_should_draw();
-            self.battery_indicator.set_should_draw();
+            self.row.set_should_draw();
             self.menu.set_should_draw();
             self.button_hints.set_should_draw();
         }
@@ -537,18 +553,13 @@ where
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        vec![
-            &self.name,
-            &self.battery_indicator,
-            &self.menu,
-            &self.button_hints,
-        ]
+        vec![&self.name, &self.row, &self.menu, &self.button_hints]
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
         vec![
             &mut self.name,
-            &mut self.battery_indicator,
+            &mut self.row,
             &mut self.menu,
             &mut self.button_hints,
         ]

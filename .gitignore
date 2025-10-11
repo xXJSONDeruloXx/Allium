@@ -5,3 +5,6 @@
 !.gitkeep
 SDL2.dll
 .DS_Store
+.devenv
+.devenv.flake.nix
+devenv.lock

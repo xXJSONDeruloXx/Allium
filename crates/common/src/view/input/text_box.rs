@@ -76,7 +76,7 @@ impl View for TextBox {
     }
 
     fn should_draw(&self) -> bool {
-        self.label.should_draw() || self.keyboard.as_ref().map_or(false, |k| k.should_draw())
+        self.label.should_draw() || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
     }
 
     fn set_should_draw(&mut self) {

@@ -85,8 +85,8 @@ $(DIST_DIR)/.allium/bin/dufs:
 
 .PHONY: lint
 lint:
-	cargo fmt
-	cargo clippy --fix --allow-dirty --allow-staged --all-targets
+	cargo fmt --all -- --check
+	cargo clippy --fix --allow-dirty --allow-staged --all-targets -- -D warnings
 
 .PHONY: bump-version
 bump-version: lint

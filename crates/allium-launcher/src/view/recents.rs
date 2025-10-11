@@ -136,7 +136,7 @@ impl View for Recents {
     fn should_draw(&self) -> bool {
         self.list.should_draw()
             || self.button_hints.should_draw()
-            || self.keyboard.as_ref().map_or(false, |k| k.should_draw())
+            || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
     }
 
     fn set_should_draw(&mut self) {

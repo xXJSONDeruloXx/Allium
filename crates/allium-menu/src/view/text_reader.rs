@@ -429,7 +429,7 @@ impl View for TextReader {
             || self
                 .keyboard
                 .as_ref()
-                .map_or(false, common::view::View::should_draw)
+                .is_some_and(common::view::View::should_draw)
     }
 
     fn set_should_draw(&mut self) {

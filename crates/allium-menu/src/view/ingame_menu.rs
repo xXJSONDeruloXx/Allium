@@ -239,10 +239,11 @@ where
             MenuEntry::Save => {
                 let slot = self.retroarch_info.as_ref().unwrap().state_slot.unwrap();
                 RetroArchCommand::SaveStateSlot(slot).send().await?;
+                let core = self.res.get::<GameInfo>().core.to_owned();
                 commands
                     .send(Command::SaveStateScreenshot {
                         path: self.path.canonicalize()?.to_string_lossy().to_string(),
-                        core: self.res.get::<GameInfo>().core.clone(),
+                        core,
                         slot,
                     })
                     .await?;
@@ -272,10 +273,11 @@ where
             }
             MenuEntry::Quit => {
                 if self.retroarch_info.is_some() {
+                    let core = self.res.get::<GameInfo>().core.to_owned();
                     commands
                         .send(Command::SaveStateScreenshot {
                             path: self.path.canonicalize()?.to_string_lossy().to_string(),
-                            core: self.res.get::<GameInfo>().core.clone(),
+                            core,
                             slot: -1,
                         })
                         .await?;

@@ -346,7 +346,7 @@ where
         } else {
             self.menu
                 .as_ref()
-                .map_or(false, common::view::View::should_draw)
+                .is_some_and(common::view::View::should_draw)
                 || self.list.should_draw()
                 || self.image.should_draw()
                 || self.button_hints.should_draw()

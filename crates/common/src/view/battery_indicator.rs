@@ -258,15 +258,29 @@ where
     }
 
     fn bounding_box(&mut self, styles: &Stylesheet) -> Rect {
-        let w = (styles.status_bar_font_size() * 3.0) as u32;
-        let h = (styles.status_bar_font_size() * 6.0 / 5.0) as u32;
+        let font_size = styles.status_bar_font_size() as u32;
+        let margin = styles.ui_font.size as i32 * 2 / 28;
+        let stroke = styles.ui_font.size as i32 * 3 / 28;
 
-        Rect::new(
-            self.point.x - w as i32,
-            styles.ui_font.size as i32 / 6,
-            w,
-            h,
-        )
+        // Label width
+        let label_w = if self.battery.charging() {
+            (styles.status_bar_font_size() * 5.0 / 7.0) as i32 + margin * 3
+        } else if let Some(ref mut label) = self.label {
+            label.bounding_box(styles).w as i32 + 8
+        } else {
+            0
+        };
+
+        // Outer battery
+        let battery_w = font_size as i32 + stroke + margin * 3;
+
+        // Calculate the leftmost point (battery outer rectangle start)
+        let left = self.point.x - label_w - battery_w;
+        let top = self.point.y;
+        let right = self.point.x;
+        let bottom = self.point.y + (styles.ui_font.size as f32 * 3.0 / 5.0) as i32;
+
+        Rect::new(left, top, (right - left) as u32, (bottom - top) as u32)
     }
 
     fn set_position(&mut self, point: Point) {

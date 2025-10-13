@@ -252,6 +252,7 @@ name = "Opera"
 [cores.pcsx_rearmed]
 retroarch = "pcsx_rearmed"
 name = "PCSX ReARMed"
+swap = true
 
 [cores.picodrive]
 retroarch = "picodrive"

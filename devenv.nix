@@ -19,6 +19,7 @@ in
     docker
     sdl2-compat # Simulator currently crashes immediately: https://github.com/libsdl-org/sdl2-compat/issues/508
     libclang
+    inetutils
   ];
 
   languages.rust = {

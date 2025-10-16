@@ -38,7 +38,5 @@ sdl2 = { version = "0.35.2", optional = true }
 sysfs_gpio = { version = "0.6.1", optional = true }
 wait-timeout = "0.2.0"
 fast_image_resize = "2.7.3"
-
-[target.'cfg(target_arch = "arm")'.dependencies]
 evdev = { version = "0.12.1", features = ["tokio"], optional = true }
 framebuffer = { version = "0.3.1", optional = true }

@@ -35,6 +35,7 @@ pub struct SuspendContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MiyooDeviceModel {
     Miyoo283,
+    Miyoo285,
     Miyoo354,
 }
 
@@ -42,6 +43,7 @@ impl fmt::Display for MiyooDeviceModel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             MiyooDeviceModel::Miyoo283 => write!(f, "Miyoo Mini (MY283)"),
+            MiyooDeviceModel::Miyoo285 => write!(f, "Miyoo Mini Flip (MY285)"),
             MiyooDeviceModel::Miyoo354 => write!(f, "Miyoo Mini+ (MY354)"),
         }
     }
@@ -73,7 +75,9 @@ impl Platform for MiyooPlatform {
     fn battery(&self) -> Result<Box<dyn Battery>> {
         Ok(match self.model {
             MiyooDeviceModel::Miyoo283 => Box::new(Miyoo283Battery::new()),
-            MiyooDeviceModel::Miyoo354 => Box::new(Miyoo354Battery::new()),
+            MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => {
+                Box::new(Miyoo354Battery::new())
+            }
         })
     }
 
@@ -85,7 +89,7 @@ impl Platform for MiyooPlatform {
                 MiyooDeviceModel::Miyoo283 => {
                     std::process::Command::new("reboot").exec();
                 }
-                MiyooDeviceModel::Miyoo354 => {
+                MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => {
                     std::process::Command::new("poweroff").exec();
                 }
             }
@@ -110,7 +114,7 @@ impl Platform for MiyooPlatform {
     fn set_volume(&mut self, volume: i32) -> Result<()> {
         match self.model {
             MiyooDeviceModel::Miyoo283 => Ok(()),
-            MiyooDeviceModel::Miyoo354 => volume::set_volume(volume),
+            MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => volume::set_volume(volume),
         }
     }
 
@@ -172,7 +176,7 @@ impl Platform for MiyooPlatform {
     fn has_wifi() -> bool {
         match detect_model() {
             MiyooDeviceModel::Miyoo283 => false,
-            MiyooDeviceModel::Miyoo354 => true,
+            MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => true,
         }
     }
 }
@@ -184,7 +188,9 @@ impl Default for MiyooPlatform {
 }
 
 fn detect_model() -> MiyooDeviceModel {
-    if std::path::Path::new("/customer/app/axp_test").exists() {
+    if std::path::Path::new("/dev/input/event1").exists() {
+        MiyooDeviceModel::Miyoo285
+    } else if std::path::Path::new("/customer/app/axp_test").exists() {
         MiyooDeviceModel::Miyoo354
     } else {
         MiyooDeviceModel::Miyoo283

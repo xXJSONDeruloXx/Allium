@@ -4,7 +4,7 @@ use std::io::Write;
 use tokio::process::Command;
 
 use anyhow::Result;
-use log::{debug, warn};
+use log::{debug, info, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::constants::ALLIUM_WIFI_SETTINGS;
@@ -52,13 +52,20 @@ impl WiFiSettings {
             wifi_on()?;
             telnet_off()?;
             if self.ntp {
+                info!("Starting NTP...");
                 ntp_sync()?;
             }
             if self.telnet {
+                info!("Starting Telnet...");
                 telnet_on()?;
             }
             if self.ftp {
+                info!("Starting FTP...");
                 ftp_on()?;
+            }
+            if self.web_file_browser {
+                info!("Starting Web File Browser...");
+                web_file_browser_on()?;
             }
         }
         Ok(())

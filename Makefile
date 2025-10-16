@@ -44,6 +44,10 @@ third-party/my283:
 build: third-party/my283
 	cross build --release --target=$(CROSS_TARGET_TRIPLE) --features=miyoo --bin=alliumd --bin=allium-launcher --bin=allium-menu --bin=activity-tracker --bin=screenshot --bin=say --bin=show --bin=show-hotkeys --bin=myctl
 
+.PHONY: debug
+debug: third-party/my283
+	cross build --target=$(CROSS_TARGET_TRIPLE) --features=miyoo --bin=alliumd --bin=allium-launcher --bin=allium-menu --bin=activity-tracker --bin=screenshot --bin=say --bin=show --bin=show-hotkeys --bin=myctl
+
 .PHONY: package-build
 package-build:
 	mkdir -p $(DIST_DIR)/.allium/bin

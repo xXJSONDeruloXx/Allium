@@ -20,7 +20,7 @@ use crate::retroarch_info::RetroArchInfo;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new().env().init().unwrap();
 
     #[cfg(not(feature = "simulator"))]
     let info = RetroArchCommand::GetInfo.send_recv().await?.map(|ret| {

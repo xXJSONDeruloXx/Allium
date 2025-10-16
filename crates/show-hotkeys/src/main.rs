@@ -12,7 +12,7 @@ use simple_logger::SimpleLogger;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new().env().init().unwrap();
 
     let platform = DefaultPlatform::new()?;
     let mut app = App::new(platform).await?;

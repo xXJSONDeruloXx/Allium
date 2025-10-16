@@ -10,7 +10,7 @@ use crate::alliumd::AlliumD;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new().env().init().unwrap();
 
     #[cfg(feature = "console")]
     {

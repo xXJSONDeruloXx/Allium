@@ -61,6 +61,8 @@ pub trait Platform {
     fn firmware() -> String;
 
     fn has_wifi() -> bool;
+
+    fn has_lid() -> bool;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,5 +92,7 @@ pub enum Key {
     Power,
     VolDown,
     VolUp,
+    LidClose,
+    LidOpen,
     Unknown,
 }

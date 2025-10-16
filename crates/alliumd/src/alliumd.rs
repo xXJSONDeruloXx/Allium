@@ -355,6 +355,15 @@ impl AlliumD<DefaultPlatform> {
                         }
                     }
                 }
+                KeyEvent::Pressed(Key::LidClose) =>
+                {
+                    #[cfg(unix)]
+                    match self.power_settings.lid_close_action {
+                        PowerButtonAction::Suspend => self.handle_suspend().await?,
+                        PowerButtonAction::Shutdown => self.handle_quit().await?,
+                        PowerButtonAction::Nothing => {}
+                    }
+                }
                 KeyEvent::Released(Key::Menu) => {
                     if self.is_menu_pressed_alone {
                         if self.is_ingame()
@@ -432,7 +441,7 @@ impl AlliumD<DefaultPlatform> {
         loop {
             tokio::select! {
                 key_event = self.platform.poll()=> {
-                    if matches!(key_event, KeyEvent::Released(Key::Power)) {
+                    if matches!(key_event, KeyEvent::Released(Key::Power)) || matches!(key_event, KeyEvent::Pressed(Key::LidOpen)) {
                         break;
                     }
                 }

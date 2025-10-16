@@ -179,6 +179,13 @@ impl Platform for MiyooPlatform {
             MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => true,
         }
     }
+
+    fn has_lid() -> bool {
+        match detect_model() {
+            MiyooDeviceModel::Miyoo283 | MiyooDeviceModel::Miyoo354 => false,
+            MiyooDeviceModel::Miyoo285 => true,
+        }
+    }
 }
 
 impl Default for MiyooPlatform {

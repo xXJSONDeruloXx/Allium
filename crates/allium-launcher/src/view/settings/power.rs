@@ -35,34 +35,18 @@ impl Power {
 
         let auto_sleep_duration_disabled_label =
             locale.t("settings-power-auto-sleep-duration-disabled");
-        let mut list = SettingsList::new(
-            Rect::new(
-                x + 12,
-                y + 8,
-                w - 24,
-                h - 8 - ButtonIcon::diameter(&styles) - 8,
-            ),
-            vec![
-                locale.t("settings-power-power-button-action"),
+
+        let mut buttons: Vec<(String, Box<dyn View>)> = vec![
+            (
                 locale.t("settings-power-auto-sleep-when-charging"),
-                locale.t("settings-power-auto-sleep-duration-minutes"),
-            ],
-            vec![
-                Box::new(Select::new(
-                    Point::zero(),
-                    power_settings.power_button_action as usize,
-                    vec![
-                        locale.t("settings-power-power-button-action-suspend"),
-                        locale.t("settings-power-power-button-action-shutdown"),
-                        locale.t("settings-power-power-button-action-nothing"),
-                    ],
-                    Alignment::Right,
-                )),
                 Box::new(Toggle::new(
                     Point::zero(),
                     power_settings.auto_sleep_when_charging,
                     Alignment::Right,
                 )),
+            ),
+            (
+                locale.t("settings-power-auto-sleep-duration-minutes"),
                 Box::new(Number::new(
                     Point::zero(),
                     power_settings.auto_sleep_duration_minutes,
@@ -77,7 +61,47 @@ impl Power {
                     },
                     Alignment::Right,
                 )),
-            ],
+            ),
+            (
+                locale.t("settings-power-power-button-action"),
+                Box::new(Select::new(
+                    Point::zero(),
+                    power_settings.power_button_action as usize,
+                    vec![
+                        locale.t("settings-power-power-button-action-suspend"),
+                        locale.t("settings-power-power-button-action-shutdown"),
+                        locale.t("settings-power-power-button-action-nothing"),
+                    ],
+                    Alignment::Right,
+                )),
+            ),
+        ];
+        if DefaultPlatform::has_lid() {
+            buttons.push((
+                locale.t("settings-power-lid-close-action"),
+                Box::new(Select::new(
+                    Point::zero(),
+                    power_settings.lid_close_action as usize,
+                    vec![
+                        locale.t("settings-power-power-button-action-suspend"),
+                        locale.t("settings-power-power-button-action-shutdown"),
+                        locale.t("settings-power-power-button-action-nothing"),
+                    ],
+                    Alignment::Right,
+                )),
+            ));
+        }
+        let (left, right) = buttons.into_iter().unzip();
+
+        let mut list = SettingsList::new(
+            Rect::new(
+                x + 12,
+                y + 8,
+                w - 24,
+                h - 8 - ButtonIcon::diameter(&styles) - 8,
+            ),
+            left,
+            right,
             styles.ui_font.size + SELECTION_MARGIN,
         );
         if let Some(state) = state {
@@ -156,14 +180,19 @@ impl View for Power {
             while let Some(command) = bubble.pop_front() {
                 if let Command::ValueChanged(i, val) = command {
                     match i {
-                        0 => {
+                        0 => self.power_settings.auto_sleep_when_charging = val.as_bool().unwrap(),
+                        1 => {
+                            self.power_settings.auto_sleep_duration_minutes = val.as_int().unwrap()
+                        }
+                        2 => {
                             self.power_settings.power_button_action =
                                 PowerButtonAction::from_repr(val.as_int().unwrap() as usize)
                                     .unwrap_or_default()
                         }
-                        1 => self.power_settings.auto_sleep_when_charging = val.as_bool().unwrap(),
-                        2 => {
-                            self.power_settings.auto_sleep_duration_minutes = val.as_int().unwrap()
+                        3 => {
+                            self.power_settings.lid_close_action =
+                                PowerButtonAction::from_repr(val.as_int().unwrap() as usize)
+                                    .unwrap_or_default()
                         }
                         _ => unreachable!("Invalid index"),
                     }

@@ -1,5 +1,10 @@
+use std::fs::File;
+use std::io::Read;
+use std::time::Duration;
+
 use anyhow::Result;
 use evdev::{Device, EventStream, EventType};
+use log::info;
 
 use crate::constants::MAXIMUM_FRAME_TIME;
 use crate::platform::{Key, KeyEvent};
@@ -32,6 +37,7 @@ impl From<evdev::Key> for Key {
 
 pub struct EvdevKeys {
     pub events: EventStream,
+    lid_switch_poller: LidSwitchPoller,
 }
 
 impl EvdevKeys {
@@ -40,12 +46,23 @@ impl EvdevKeys {
             events: Device::open("/dev/input/event0")
                 .unwrap()
                 .into_event_stream()?,
+            lid_switch_poller: LidSwitchPoller::new(),
         })
     }
 
     pub async fn poll(&mut self) -> KeyEvent {
         loop {
-            let event = self.events.next_event().await.unwrap();
+            if let Some(lid_event) = self.lid_switch_poller.poll() {
+                info!("Lid event detected: {:?}", lid_event);
+                return lid_event;
+            }
+
+            let timeout =
+                tokio::time::timeout(Duration::from_millis(500), self.events.next_event());
+            let Ok(result) = timeout.await else {
+                continue;
+            };
+            let event = result.unwrap();
             match event.event_type() {
                 EventType::KEY => {
                     let key = event.code();
@@ -64,4 +81,37 @@ impl EvdevKeys {
             }
         }
     }
+}
+
+struct LidSwitchPoller {
+    is_lid_open: bool,
+}
+
+impl LidSwitchPoller {
+    fn new() -> Self {
+        let is_lid_open = read_is_lid_open().expect("Failed to read lid switch state");
+        Self { is_lid_open }
+    }
+
+    fn poll(&mut self) -> Option<KeyEvent> {
+        let is_lid_open = read_is_lid_open().expect("Failed to read lid switch state");
+        if is_lid_open != self.is_lid_open {
+            self.is_lid_open = is_lid_open;
+            if is_lid_open {
+                Some(KeyEvent::Pressed(Key::LidOpen))
+            } else {
+                Some(KeyEvent::Pressed(Key::LidClose))
+            }
+        } else {
+            None
+        }
+    }
+}
+
+fn read_is_lid_open() -> Result<bool> {
+    let mut file = File::open("/sys/devices/soc0/soc/soc:hall-mh248/hallvalue")
+        .expect("Failed to open /sys/devices/soc0/soc/soc:hall-mh248/hallvalue");
+    let mut buffer = [0u8; 2];
+    file.read_exact(&mut buffer)?;
+    Ok(buffer[0] == '1' as u8)
 }

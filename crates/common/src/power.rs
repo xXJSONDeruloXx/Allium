@@ -10,6 +10,8 @@ use crate::constants::ALLIUM_POWER_SETTINGS;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PowerSettings {
     pub power_button_action: PowerButtonAction,
+    #[serde(default = "PowerButtonAction::shutdown")]
+    pub lid_close_action: PowerButtonAction,
     pub auto_sleep_when_charging: bool,
     pub auto_sleep_duration_minutes: i32,
 }
@@ -22,9 +24,22 @@ pub enum PowerButtonAction {
     Nothing,
 }
 
+impl PowerButtonAction {
+    pub fn suspend() -> Self {
+        PowerButtonAction::Suspend
+    }
+    pub fn shutdown() -> Self {
+        PowerButtonAction::Shutdown
+    }
+    pub fn nothing() -> Self {
+        PowerButtonAction::Nothing
+    }
+}
+
 impl Default for PowerSettings {
     fn default() -> Self {
         Self {
+            lid_close_action: PowerButtonAction::Shutdown,
             power_button_action: PowerButtonAction::Suspend,
             auto_sleep_when_charging: true,
             auto_sleep_duration_minutes: 5,

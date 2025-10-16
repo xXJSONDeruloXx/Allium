@@ -75,6 +75,10 @@ impl Platform for MockPlatform {
     fn has_wifi() -> bool {
         false
     }
+
+    fn has_lid() -> bool {
+        false
+    }
 }
 
 impl Default for MockPlatform {

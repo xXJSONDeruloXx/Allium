@@ -132,6 +132,10 @@ impl Platform for SimulatorPlatform {
     fn has_wifi() -> bool {
         true
     }
+
+    fn has_lid() -> bool {
+        true
+    }
 }
 
 impl Default for SimulatorPlatform {

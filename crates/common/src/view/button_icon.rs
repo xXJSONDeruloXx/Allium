@@ -66,6 +66,8 @@ impl View for ButtonIcon {
             Key::Power => (styles.disabled_color, "POWER"),
             Key::VolDown => (styles.disabled_color, "VOL-"),
             Key::VolUp => (styles.disabled_color, "VOL+"),
+            Key::LidClose => (styles.disabled_color, "CLOSE"),
+            Key::LidOpen => (styles.disabled_color, "OPEN"),
             Key::Unknown => unimplemented!("unknown button"),
         };
 
@@ -281,6 +283,8 @@ impl View for ButtonIcon {
             Key::Power => "POWER",
             Key::VolDown => "VOL-",
             Key::VolUp => "VOL+",
+            Key::LidClose => "CLOSE",
+            Key::LidOpen => "OPEN",
             Key::Unknown => unimplemented!("unknown button"),
         };
 

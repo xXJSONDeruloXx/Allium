@@ -60,13 +60,13 @@ where
 
     pub fn push(&mut self, view: V) {
         self.children.push(view);
-        self.dirty = true;
+        self.set_should_draw();
         self.has_layout = false;
     }
 
     pub fn pop(&mut self) -> Option<V> {
         let view = self.children.pop();
-        self.dirty = true;
+        self.set_should_draw();
         self.has_layout = false;
         view
     }
@@ -76,14 +76,14 @@ where
             return None;
         }
         let view = self.children.remove(index);
-        self.dirty = true;
+        self.set_should_draw();
         self.has_layout = false;
         Some(view)
     }
 
     pub fn insert(&mut self, index: usize, view: V) {
         self.children.insert(index, view);
-        self.dirty = true;
+        self.set_should_draw();
         self.has_layout = false;
     }
 
@@ -94,7 +94,7 @@ where
             Alignment::Right => self.layout_right(styles),
         }
         self.has_layout = true;
-        self.dirty = true;
+        self.set_should_draw();
     }
 
     fn layout_left(&mut self, styles: &Stylesheet) {
@@ -143,11 +143,12 @@ where
             display.load(self.bounding_box(styles))?;
             drawn = true;
             self.dirty = false;
-        }
-
-        for entry in &mut self.children.iter_mut() {
-            if entry.should_draw() && entry.draw(display, styles)? {
-                drawn = true;
+            for entry in &mut self.children.iter_mut() {
+                entry.draw(display, styles)?;
+            }
+        } else {
+            for entry in &mut self.children.iter_mut() {
+                drawn |= entry.should_draw() && entry.draw(display, styles)?;
             }
         }
         Ok(drawn)
@@ -196,6 +197,6 @@ where
     fn set_position(&mut self, point: Point) {
         self.point = point;
         self.has_layout = false;
-        self.dirty = true;
+        self.set_should_draw();
     }
 }

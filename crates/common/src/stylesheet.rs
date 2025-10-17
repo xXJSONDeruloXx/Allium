@@ -308,12 +308,12 @@ rgui_particle_color = "0xFF{highlight:X}"
 
     #[inline]
     fn default_tab_font_size() -> f32 {
-        0.9
+        1.0
     }
 
     #[inline]
     fn default_status_bar_font_size() -> f32 {
-        0.9
+        1.0
     }
 
     #[inline]

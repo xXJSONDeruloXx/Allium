@@ -7,6 +7,8 @@ tab-settings = Impostazioni
 sort-alphabetical = Ordina: A-Z
 sort-last-played = Ordina: Recenti
 sort-most-played = Ordina: Attività
+sort-rating = Ordina: Valutazione
+sort-release-date = Ordina: Data di uscita
 sort-random = Ordina: Casuale
 sort-search = Cerca
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = Font UI
 settings-theme-ui-font-size = Dimensioni Font UI
 settings-theme-guide-font = Font Guida
 settings-theme-guide-font-size = Dimensioni Font Guida
+settings-theme-tab-font-size = Dimensioni Font Tab
+settings-theme-status-bar-font-size = Dimensioni Font Barra
+settings-theme-button-hint-font-size = Dimensioni Font Hint
 settings-theme-highlight-color = Colore Evidenziazione
 settings-theme-foreground-color = Colore Primo Piano
 settings-theme-background-color = Colore Sfondo
 settings-theme-disabled-color = Color Inattivo
+settings-theme-tab-color = Colore Scheda
+settings-theme-tab-selected-color = Colore Scheda Selezionata
 settings-theme-button-a-color = Colore Pulsante A 
 settings-theme-button-b-color = Colore Pulsante B
 settings-theme-button-x-color = Colore Pulsante X
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Colore Pulsante Y
 
 settings-language = Lingua
 settings-language-language = Lingua
+
+settings-power = Alimentazione
+settings-power-power-button-action = Azione pulsante di accensione
+settings-power-power-button-action-suspend = Sospendi
+settings-power-power-button-action-shutdown = Spegni
+settings-power-power-button-action-nothing = Nulla
+settings-power-lid-close-action = Azione chiusura lid
+settings-power-auto-sleep-when-charging = Auto sospensione in ricarica
+settings-power-auto-sleep-duration-minutes = Durata auto sospensione (min)
+settings-power-auto-sleep-duration-disabled = Disabilitato
 
 settings-files = File
 

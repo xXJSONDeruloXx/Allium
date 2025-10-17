@@ -7,6 +7,8 @@ tab-settings = Paramètres
 sort-alphabetical = Tri: A-Z
 sort-last-played = Tri: Récent
 sort-most-played = Tri: Temps
+sort-rating = Tri: Note
+sort-release-date = Tri: Date de sortie
 sort-random = Tri: Aléatoire
 sort-search = Recherche
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = UI: Police
 settings-theme-ui-font-size = UI: Taille de police
 settings-theme-guide-font = Guide: Police
 settings-theme-guide-font-size = Guide: Taille de police
+settings-theme-tab-font-size = Tab: Taille de police
+settings-theme-status-bar-font-size = Barre état: Taille de police
+settings-theme-button-hint-font-size = Aide bouton: Taille de police
 settings-theme-highlight-color = Couleur: Accentuation
 settings-theme-foreground-color = Couleur: Premier plan
 settings-theme-background-color = Couleur: Arrière plan
 settings-theme-disabled-color = Couleur: Désactivé
+settings-theme-tab-color = Couleur: Onglet
+settings-theme-tab-selected-color = Couleur: Onglet sélectionné
 settings-theme-button-a-color = Couleur: Bouton A
 settings-theme-button-b-color = Couleur: Bouton B
 settings-theme-button-x-color = Couleur: Bouton X
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Couleur: Bouton Y
 
 settings-language = Langue
 settings-language-language = Langue
+
+settings-power = Alimentation
+settings-power-power-button-action = Action bouton d'alimentation
+settings-power-power-button-action-suspend = Suspendre
+settings-power-power-button-action-shutdown = Éteindre
+settings-power-power-button-action-nothing = Rien
+settings-power-lid-close-action = Action couvercle
+settings-power-auto-sleep-when-charging = Veille auto lors de la charge
+settings-power-auto-sleep-duration-minutes = Durée veille auto (min)
+settings-power-auto-sleep-duration-disabled = Désactivé
 
 settings-files = Fichiers
 

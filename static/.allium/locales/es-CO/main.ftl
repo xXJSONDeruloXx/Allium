@@ -4,10 +4,12 @@ tab-games = Juegos
 tab-apps = Apps
 tab-settings = Configuraciones
 
-sort-alphabetical = Orden: A-Z
+sort-alphabetical = Ordenar por: A-Z
 sort-last-played = Ordenar por: Recientes
 sort-most-played = Ordenar por: Tiempo de juego
-sort-random = Orden: Random
+sort-rating = Ordenar por: Calificación
+sort-release-date = Ordenar por: Fecha de lanzamiento
+sort-random = Ordenar por: Random
 sort-search = Buscar
 
 populating-database = Creando base de datos...
@@ -54,10 +56,15 @@ settings-theme-ui-font = Fuente UI
 settings-theme-ui-font-size = Tamaño de fuente UI
 settings-theme-guide-font = Fuente de Guia
 settings-theme-guide-font-size = Tamaño fuente de Guia
+settings-theme-tab-font-size = Tamaño fuente pestaña
+settings-theme-status-bar-font-size = Tamaño fuente barra
+settings-theme-button-hint-font-size = Tamaño fuente sugerencia
 settings-theme-highlight-color = Realce de color
 settings-theme-foreground-color = Color Principal
 settings-theme-background-color = Color Fondo
 settings-theme-disabled-color = Color para deshabilitado
+settings-theme-tab-color = Color pestaña
+settings-theme-tab-selected-color = Color pestaña activa
 settings-theme-button-a-color = Color Boton A
 settings-theme-button-b-color = Color Boton B
 settings-theme-button-x-color = Color Boton X
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Color Boton Y
 
 settings-language = Idioma
 settings-language-language = Idioma
+
+settings-power = Energía
+settings-power-power-button-action = Acción del botón de encendido
+settings-power-power-button-action-suspend = Suspender
+settings-power-power-button-action-shutdown = Apagar
+settings-power-power-button-action-nothing = Nada
+settings-power-lid-close-action = Acción de la tapa
+settings-power-auto-sleep-when-charging = Auto suspensión al cargar
+settings-power-auto-sleep-duration-minutes = Duración auto suspensión (min)
+settings-power-auto-sleep-duration-disabled = Deshabilitado
 
 settings-files = Archivos
 

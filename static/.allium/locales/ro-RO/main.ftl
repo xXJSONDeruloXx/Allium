@@ -7,6 +7,8 @@ tab-settings = Setări
 sort-alphabetical = Ordine: A-Z
 sort-last-played = Ordine: Recente
 sort-most-played = Ordine: Activitate
+sort-rating = Ordine: Evaluare
+sort-release-date = Ordine: Dată de lansare
 sort-random = Ordine: Aleatoriu
 sort-search = Caută
 
@@ -61,6 +63,8 @@ settings-theme-highlight-color = Culoare de Evidențiere
 settings-theme-foreground-color = Culoare de Prim Plan
 settings-theme-background-color = Culoare de Fundal
 settings-theme-disabled-color = Culoare Dezactivată
+settings-theme-tab-color = Culoare Filă
+settings-theme-tab-selected-color = Culoare Filă Selectată
 settings-theme-button-a-color = Culoare Buton A
 settings-theme-button-b-color = Culoare Buton B
 settings-theme-button-x-color = Culoare Buton X
@@ -68,6 +72,16 @@ settings-theme-button-y-color = Culoare Buton Y
 
 settings-language = Limbă
 settings-language-language = Limbă
+
+settings-power = Alimentare
+settings-power-power-button-action = Acțiunea butonului de alimentare
+settings-power-power-button-action-suspend = Suspendare
+settings-power-power-button-action-shutdown = Oprire
+settings-power-power-button-action-nothing = Nimic
+settings-power-lid-close-action = Acțiune închidere capac
+settings-power-auto-sleep-when-charging = Somn automat la încărcare
+settings-power-auto-sleep-duration-minutes = Durată somn automat (min)
+settings-power-auto-sleep-duration-disabled = Dezactivat
 
 settings-files = Fișiere
 

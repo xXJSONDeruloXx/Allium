@@ -7,6 +7,8 @@ tab-settings = 設定
 sort-alphabetical = ソート：A-Z
 sort-last-played = ソート：最近プレイ
 sort-most-played = ソート：プレイ時間
+sort-rating = ソート：評価
+sort-release-date = ソート：リリース日
 sort-random = ソート：ランダム
 sort-search = 検索
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = UIフォント
 settings-theme-ui-font-size = UIフォントサイズ
 settings-theme-guide-font = ガイドフォント
 settings-theme-guide-font-size = ガイドフォントサイズ
+settings-theme-tab-font-size = タブフォントサイズ
+settings-theme-status-bar-font-size = ステータスバーフォントサイズ
+settings-theme-button-hint-font-size = ボタンヒントフォントサイズ
 settings-theme-highlight-color = ハイライトの色
 settings-theme-foreground-color = 前景色
 settings-theme-background-color = 背景色
 settings-theme-disabled-color = 無効色
+settings-theme-tab-color = タブの色
+settings-theme-tab-selected-color = 選択タブの色
 settings-theme-button-a-color = ボタンAの色
 settings-theme-button-b-color = ボタンBの色
 settings-theme-button-x-color = ボタンXの色
@@ -65,6 +72,16 @@ settings-theme-button-y-color = ボタンYの色
 
 settings-language = 言語
 settings-language-language = 言語
+
+settings-power = 電源
+settings-power-power-button-action = 電源ボタン動作
+settings-power-power-button-action-suspend = サスペンド
+settings-power-power-button-action-shutdown = シャットダウン
+settings-power-power-button-action-nothing = 何もしない
+settings-power-lid-close-action = 蓋を閉じる動作
+settings-power-auto-sleep-when-charging = 充電中の自動スリープ
+settings-power-auto-sleep-duration-minutes = 自動スリープ時間（分）
+settings-power-auto-sleep-duration-disabled = 無効
 
 settings-files = ファイル
 

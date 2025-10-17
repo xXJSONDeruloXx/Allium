@@ -7,6 +7,8 @@ tab-settings = Einstellungen
 sort-alphabetical = Sortierung: A-Z
 sort-last-played = Sortierung: Zuletzt
 sort-most-played = Sortierung: Spielzeit
+sort-rating = Sortierung: Bewertung
+sort-release-date = Sortierung: Erscheinungsdatum
 sort-random = Sortierung: Zufall
 sort-search = Suche
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = UI Schriftart
 settings-theme-ui-font-size = UI Schriftgröße
 settings-theme-guide-font = Schriftart Anleitung
 settings-theme-guide-font-size = Schriftgröße Anleitung
+settings-theme-tab-font-size = Tab Schriftgröße
+settings-theme-status-bar-font-size = Statusleiste Schriftgröße
+settings-theme-button-hint-font-size = Button-Hinweis Schriftgröße
 settings-theme-highlight-color = Hervorhebungsfarbe
 settings-theme-foreground-color = Vordergrundfarbe
 settings-theme-background-color = Hintergrundfarbe
 settings-theme-disabled-color = Deaktivierte Farbe
+settings-theme-tab-color = Farbe Tab
+settings-theme-tab-selected-color = Farbe Tab aktiv
 settings-theme-button-a-color = Farbe Knopf A
 settings-theme-button-b-color = Farbe Knopf B
 settings-theme-button-x-color = Farbe Knopf X
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Farbe Knopf Y
 
 settings-language = Sprache
 settings-language-language = Sprache
+
+settings-power = Energie
+settings-power-power-button-action = Aktion bei Power-Taste
+settings-power-power-button-action-suspend = Ruhezustand
+settings-power-power-button-action-shutdown = Herunterfahren
+settings-power-power-button-action-nothing = Nichts
+settings-power-lid-close-action = Aktion bei Deckel
+settings-power-auto-sleep-when-charging = Auto-Schlaf beim Laden
+settings-power-auto-sleep-duration-minutes = Auto-Schlaf Dauer (Min)
+settings-power-auto-sleep-duration-disabled = Deaktiviert
 
 settings-files = Dateien
 

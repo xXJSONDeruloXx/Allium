@@ -7,6 +7,8 @@ tab-settings = 設置
 sort-alphabetical = 排序：A-Z
 sort-last-played = 排序：玩得最近
 sort-most-played = 排序：玩得最耐
+sort-rating = 排序：評分
+sort-release-date = 排序：發佈日期
 sort-random = 排序：隨機
 sort-search = 搜索
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = UI字體
 settings-theme-ui-font-size = UI字體大小
 settings-theme-guide-font = 指南字體
 settings-theme-guide-font-size = 指南字體大小
+settings-theme-tab-font-size = 標籤字體大小
+settings-theme-status-bar-font-size = 狀態欄字體大小
+settings-theme-button-hint-font-size = 按鈕提示字體大小
 settings-theme-highlight-color = 強調顏色
 settings-theme-foreground-color = 前景色
 settings-theme-background-color = 背景色
 settings-theme-disabled-color = 禁用顏色
+settings-theme-tab-color = 標籤顏色
+settings-theme-tab-selected-color = 選中標籤顏色
 settings-theme-button-a-color = A按鈕顏色
 settings-theme-button-b-color = B按鈕顏色
 settings-theme-button-x-color = X按鈕顏色
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Y按鈕顏色
 
 settings-language = 語言
 settings-language-language = 語言
+
+settings-power = 電源
+settings-power-power-button-action = 電源掣操作
+settings-power-power-button-action-suspend = 掛起
+settings-power-power-button-action-shutdown = 閂機
+settings-power-power-button-action-nothing = 冇嘢做
+settings-power-lid-close-action = 合蓋操作
+settings-power-auto-sleep-when-charging = 充電時自動瞓覺
+settings-power-auto-sleep-duration-minutes = 自動瞓覺時長（分鐘）
+settings-power-auto-sleep-duration-disabled = 已停用
 
 settings-files = 文件
 

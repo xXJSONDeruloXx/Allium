@@ -7,6 +7,8 @@ tab-settings = Pengaturan
 sort-alphabetical = Urut: A-Z
 sort-last-played = Urut: Baru main
 sort-most-played = Urut: Sering main
+sort-rating = Urut: Rating
+sort-release-date = Urut: Tanggal rilis
 sort-random = Urut: Acak
 sort-search = Cari
 
@@ -54,10 +56,15 @@ settings-theme-ui-font = Huruf sistem
 settings-theme-ui-font-size = Ukuran huruf
 settings-theme-guide-font = Huruf di Panduan
 settings-theme-guide-font-size = Ukuran huruf di Panduan
+settings-theme-tab-font-size = Ukuran huruf tab
+settings-theme-status-bar-font-size = Ukuran huruf baris status
+settings-theme-button-hint-font-size = Ukuran huruf petunjuk tombol
 settings-theme-highlight-color = Warna ketika disorot
 settings-theme-foreground-color = Warna depan
 settings-theme-background-color = Warna latar
 settings-theme-disabled-color = Warna tak aktif
+settings-theme-tab-color = Warna tab
+settings-theme-tab-selected-color = Warna tab terpilih
 settings-theme-button-a-color = Warna Tombol A
 settings-theme-button-b-color = Warna Tombol B
 settings-theme-button-x-color = Warna Tombol X
@@ -65,6 +72,16 @@ settings-theme-button-y-color = Warna Tombol Y
 
 settings-language = Bahasa
 settings-language-language = Bahasa
+
+settings-power = Daya
+settings-power-power-button-action = Aksi tombol daya
+settings-power-power-button-action-suspend = Tidur
+settings-power-power-button-action-shutdown = Matikan
+settings-power-power-button-action-nothing = Tidak ada
+settings-power-lid-close-action = Aksi tutup
+settings-power-auto-sleep-when-charging = Tidur otomatis saat isi daya
+settings-power-auto-sleep-duration-minutes = Durasi tidur otomatis (min)
+settings-power-auto-sleep-duration-disabled = Dinonaktifkan
 
 settings-files = Berkas
 

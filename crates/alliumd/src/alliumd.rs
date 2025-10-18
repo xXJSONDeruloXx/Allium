@@ -7,7 +7,7 @@ use anyhow::Result;
 use chrono::{DateTime, Duration, Utc};
 use common::battery::Battery;
 use common::constants::{
-    ALLIUMD_STATE, ALLIUM_GAME_INFO, ALLIUM_MENU, ALLIUM_SD_ROOT, ALLIUM_VERSION,
+    ALLIUM_GAME_INFO, ALLIUM_MENU, ALLIUM_SD_ROOT, ALLIUM_VERSION, ALLIUMD_STATE,
     BATTERY_SHUTDOWN_THRESHOLD, BATTERY_UPDATE_INTERVAL, IDLE_TIMEOUT, LONG_PRESS_DURATION,
 };
 use common::display::settings::DisplaySettings;
@@ -26,7 +26,7 @@ use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 
 #[cfg(unix)]
 use {
-    nix::sys::signal::kill, nix::sys::signal::Signal, nix::unistd::Pid,
+    nix::sys::signal::Signal, nix::sys::signal::kill, nix::unistd::Pid,
     tokio::signal::unix::SignalKind,
 };
 
@@ -477,9 +477,9 @@ impl AlliumD<DefaultPlatform> {
             if let Some(menu) = self.menu.as_mut() {
                 terminate(menu).await?;
             }
-
-            terminate(&mut self.main).await?;
         }
+
+        terminate(&mut self.main).await?;
 
         self.is_terminating = true;
 

@@ -11,12 +11,15 @@ sort-rating = Tri: Note
 sort-release-date = Tri: Date de sortie
 sort-random = Tri: Aléatoire
 sort-search = Recherche
+sort-favorites = Tri: Favoris
 
 populating-database = Génération de la BDD...
     Cette opération peut prendre plusieurs minutes.
     Allez prendre un café !
 populating-games = Génération des jeux... ({ $directory })
 
+menu-set-as-favorite = Ajouter aux favoris
+menu-unset-as-favorite = Retirer des favoris
 menu-launch = Lancer
 menu-launch-with-core = Lancer avec { $core }
 menu-reset = Réinitialiser

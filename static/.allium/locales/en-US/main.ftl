@@ -11,12 +11,15 @@ sort-rating = Sort: Rating
 sort-release-date = Sort: Release Date
 sort-random = Sort: Random
 sort-search = Search
+sort-favorites = Sort: Favorites
 
 populating-database = Populating database...
     This may take several minutes.
     Go grab a coffee!
 populating-games = Populating games... ({ $directory })
 
+menu-set-as-favorite = Set as Favorite
+menu-unset-as-favorite = Remove from Favorites
 menu-launch = Launch
 menu-launch-with-core = Launch with { $core }
 menu-reset = Reset

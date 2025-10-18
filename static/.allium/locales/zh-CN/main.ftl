@@ -11,12 +11,15 @@ sort-rating = 排序：评分
 sort-release-date = 排序：发布日期
 sort-random = 排序：随机
 sort-search = 搜索
+sort-favorites = 排序:收藏
 
 populating-database = 填充数据库...
     这可能需要几分钟。
     去喝点茶吧！
 populating-games = 填充游戏... ({ $directory })
 
+menu-set-as-favorite = 设为收藏
+menu-unset-as-favorite = 取消收藏
 menu-launch = 启动
 menu-launch-with-core = 启动（使用{ $core }）
 menu-reset = 重置

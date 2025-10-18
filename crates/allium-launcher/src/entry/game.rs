@@ -41,6 +41,8 @@ pub struct Game {
     pub publisher: Option<String>,
     /// List of genres of the game.
     pub genres: Vec<String>,
+    /// Whether the game is marked as a favorite.
+    pub favorite: bool,
 }
 
 impl Game {
@@ -69,6 +71,7 @@ impl Game {
             developer: None,
             publisher: None,
             genres: Vec::new(),
+            favorite: false,
         }
     }
 
@@ -102,6 +105,7 @@ impl Game {
             developer: game.developer,
             publisher: game.publisher,
             genres: game.genres,
+            favorite: game.favorite,
         }
     }
 
@@ -161,6 +165,7 @@ impl From<Game> for NewGame {
             developer: game.developer,
             publisher: game.publisher,
             genres: game.genres,
+            favorite: game.favorite,
         }
     }
 }

@@ -11,12 +11,15 @@ sort-rating = Ordine: Evaluare
 sort-release-date = Ordine: Dată de lansare
 sort-random = Ordine: Aleatoriu
 sort-search = Caută
+sort-favorites = Ordine: Favorite
 
 populating-database = Se populează baza de date...
     Ar putea dura câteva minute.
     Du-te și ia o cafea!
 populating-games = Se populează jocurile... ({ $directory })
 
+menu-set-as-favorite = Adaugă la Favorite
+menu-unset-as-favorite = Elimină din Favorite
 menu-launch = Pornește
 menu-launch-with-core = Pornește cu { $core }
 menu-reset = Resetează

@@ -6,8 +6,8 @@ use std::{
 use anyhow::{Context, Result};
 use chrono::{Duration, NaiveDate};
 use log::{info, trace};
-use rusqlite::{params, Connection, OptionalExtension, Row};
-use rusqlite_migration::{Migrations, M};
+use rusqlite::{Connection, OptionalExtension, Row, params};
+use rusqlite_migration::{M, Migrations};
 
 use crate::constants::{ALLIUM_BASE_DIR, ALLIUM_DATABASE};
 
@@ -30,6 +30,7 @@ pub struct Game {
     pub developer: Option<String>,
     pub publisher: Option<String>,
     pub genres: Vec<String>,
+    pub favorite: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -43,6 +44,7 @@ pub struct NewGame {
     pub developer: Option<String>,
     pub publisher: Option<String>,
     pub genres: Vec<String>,
+    pub favorite: bool,
 }
 
 impl Database {
@@ -146,6 +148,9 @@ CREATE TRIGGER games_fts_au AFTER UPDATE ON games BEGIN
     INSERT INTO games_fts(games_fts, rowid, name, path, developer, publisher) VALUES ('delete', old.id, old.name, old.path, old.developer, old.publisher);
     INSERT INTO games_fts(rowid, name, path, developer, publisher) VALUES (new.id, new.name, new.path, new.developer, new.publisher);
 END;"),
+        M::up("
+ALTER TABLE games ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
+"),
                 ])
     }
 
@@ -218,7 +223,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games WHERE last_played > 0 ORDER BY play_time DESC LIMIT ?")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE last_played > 0 ORDER BY play_time DESC LIMIT ?")?;
 
         let results = stmt
             .query_map([limit], map_game)?
@@ -234,7 +239,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games WHERE last_played > 0 ORDER BY last_played DESC LIMIT ?")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE last_played > 0 ORDER BY last_played DESC LIMIT ?")?;
 
         let results = stmt
             .query_map([limit], map_game)?
@@ -250,7 +255,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games ORDER BY rating DESC LIMIT ?")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games ORDER BY rating DESC LIMIT ?")?;
 
         let results = stmt
             .query_map([limit], map_game)?
@@ -266,7 +271,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games ORDER BY release_date DESC LIMIT ?")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games ORDER BY release_date DESC LIMIT ?")?;
 
         let results = stmt
             .query_map([limit], map_game)?
@@ -282,7 +287,23 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games WHERE id IN (SELECT id FROM games ORDER BY RANDOM() LIMIT ?)")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE id IN (SELECT id FROM games ORDER BY RANDOM() LIMIT ?)")?;
+
+        let results = stmt
+            .query_map([limit], map_game)?
+            .filter_map(|r| r.ok())
+            .collect();
+
+        Ok(results)
+    }
+
+    /// Selects favorite games.
+    pub fn select_favorites(&self, limit: i64) -> Result<Vec<Game>> {
+        let mut stmt = self
+            .conn
+            .as_ref()
+            .unwrap()
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE favorite = 1 ORDER BY last_played DESC LIMIT ?")?;
 
         let results = stmt
             .query_map([limit], map_game)?
@@ -300,7 +321,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
 
         let conn = self.conn.as_ref().unwrap();
 
-        let mut stmt = conn.prepare("SELECT games.name, games.path, image, play_count, play_time, last_played, core, rating, release_date, games.developer, games.publisher, genres FROM games JOIN games_fts ON games.id = games_fts.rowid WHERE games_fts MATCH ? LIMIT ?")?;
+        let mut stmt = conn.prepare("SELECT games.name, games.path, image, play_count, play_time, last_played, core, rating, release_date, games.developer, games.publisher, genres, favorite FROM games JOIN games_fts ON games.id = games_fts.rowid WHERE games_fts MATCH ? LIMIT ?")?;
 
         let query =
             format!("name:\"{query}\" * OR developer:\"{query}\" * OR publisher:\"{query}\" *");
@@ -316,7 +337,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
         trace!("select_games_in_directory({:?})", path);
         let conn = self.conn.as_ref().unwrap();
 
-        let mut stmt = conn.prepare("SELECT games.name, games.path, image, play_count, play_time, last_played, core, rating, release_date, games.developer, games.publisher, genres FROM games JOIN games_fts ON games.id = games_fts.rowid WHERE games_fts.path LIKE ? AND games_fts.path NOT LIKE ?")?;
+        let mut stmt = conn.prepare("SELECT games.name, games.path, image, play_count, play_time, last_played, core, rating, release_date, games.developer, games.publisher, genres, favorite FROM games JOIN games_fts ON games.id = games_fts.rowid WHERE games_fts.path LIKE ? AND games_fts.path NOT LIKE ?")?;
 
         let results = stmt
             .query_map(
@@ -337,7 +358,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .query_row("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games WHERE path = ? LIMIT 1", [path.display().to_string()], map_game)
+            .query_row("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE path = ? LIMIT 1", [path.display().to_string()], map_game)
             .optional()?;
 
         Ok(game)
@@ -348,7 +369,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
             .conn
             .as_ref()
             .unwrap()
-            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games WHERE path = ?")?;
+            .prepare("SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games WHERE path = ? ORDER BY favorite DESC")?;
 
         let mut results = vec![None; paths.len()];
         for (i, path) in paths.iter().enumerate() {
@@ -364,7 +385,7 @@ ON CONFLICT(path) DO UPDATE SET name = ?, image = ?, core = ?, rating = ?, relea
 
     pub fn select_all_games(&self) -> Result<Vec<Game>> {
         let mut stmt = self.conn.as_ref().unwrap().prepare(
-            "SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres FROM games",
+            "SELECT name, path, image, play_count, play_time, last_played, core, rating, release_date, developer, publisher, genres, favorite FROM games",
         )?;
 
         let results = stmt
@@ -409,6 +430,15 @@ ON CONFLICT(path) DO UPDATE SET play_count = play_count + 1;",
             params![play_time.num_seconds(), path.display().to_string()],
         )?;
 
+        Ok(())
+    }
+
+    /// Sets whether a game is a favorite.
+    pub fn set_favorite(&self, path: &Path, favorite: bool) -> Result<()> {
+        self.conn.as_ref().unwrap().execute(
+            "UPDATE games SET favorite = ? WHERE path = ?",
+            params![if favorite { 1 } else { 0 }, path.display().to_string()],
+        )?;
         Ok(())
     }
 
@@ -559,6 +589,7 @@ fn map_game(row: &Row<'_>) -> rusqlite::Result<Game> {
         developer: row.get(9)?,
         publisher: row.get(10)?,
         genres: serde_json::from_str(&row.get::<_, String>(11)?).unwrap(),
+        favorite: row.get::<_, i64>(12)? != 0,
     })
 }
 
@@ -586,6 +617,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -597,6 +629,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -635,6 +668,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -646,6 +680,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -680,6 +715,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -691,6 +727,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -712,6 +749,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             }])
             .unwrap();
         let by_rating = database.select_by_rating(2).unwrap();
@@ -735,6 +773,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -746,6 +785,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -767,6 +807,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             }])
             .unwrap();
         let by_release_date = database.select_by_release_date(2).unwrap();
@@ -790,6 +831,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -801,6 +843,7 @@ mod tests {
                 developer: Some("Square Enix".to_owned()),
                 publisher: Some("Nintendo".to_owned()),
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -840,6 +883,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -851,6 +895,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -891,6 +936,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -902,6 +948,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Three".to_owned(),
@@ -913,6 +960,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -965,6 +1013,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
             NewGame {
                 name: "Game Two".to_owned(),
@@ -976,6 +1025,7 @@ mod tests {
                 developer: None,
                 publisher: None,
                 genres: Vec::new(),
+                favorite: false,
             },
         ];
 
@@ -1005,15 +1055,15 @@ mod tests {
             release_date: None,
             developer: None,
             publisher: None,
-            favorite: false,
             genres: vec!["Action".to_owned(), "Adventure".to_owned()],
+            favorite: false,
         }];
 
         db.update_games(&games).unwrap();
         let game = db.select_game(&games[0].path)?.unwrap();
         assert_eq!(
             game.genres,
-            vec!["Action".into(), "Adventure".into()]
+            vec!["Action".to_owned(), "Adventure".to_owned()]
         );
 
         games[0].genres = Vec::new();

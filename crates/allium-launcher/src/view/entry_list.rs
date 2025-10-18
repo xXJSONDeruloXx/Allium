@@ -47,6 +47,7 @@ where
     list: ScrollList,
     image: Image,
     menu: Option<ScrollList>,
+    menu_entries: Vec<MenuEntry>,
     core: Option<CoreSelection>,
     button_hints: Row<ButtonHint<String>>,
     pub child: Option<Box<EntryList<S>>>,
@@ -125,6 +126,7 @@ where
             list,
             image,
             menu: None,
+            menu_entries: vec![],
             core: None,
             button_hints,
             child: None,
@@ -203,7 +205,15 @@ where
             .sort
             .entries(&self.res.get(), &self.res.get(), &self.res.get())?;
         self.list.set_items(
-            self.entries.iter().map(|e| e.name().to_string()).collect(),
+            self.entries
+                .iter()
+                .map(|e| match e {
+                    Entry::Game(game) => {
+                        format!("{}{}", if game.favorite { "♥ " } else { "" }, e.name())
+                    }
+                    _ => e.name().to_string(),
+                })
+                .collect(),
             self.sort.preserve_selection(),
         );
 
@@ -215,16 +225,17 @@ where
         let styles = self.res.get::<Stylesheet>();
         let locale = self.res.get::<Locale>();
 
-        let mut entries = [
-            MenuEntry::Launch(None),
-            MenuEntry::Reset,
-            MenuEntry::RemoveFromRecents,
-            MenuEntry::RepopulateDatabase,
-        ];
-
         let entry = self.entries.get(self.list.selected()).unwrap();
-        match entry {
+        let entries = match entry {
             Entry::Game(game) => {
+                let mut entries = vec![
+                    MenuEntry::Favorite(game.favorite),
+                    MenuEntry::Launch(None),
+                    MenuEntry::Reset,
+                    MenuEntry::RemoveFromRecents,
+                    MenuEntry::RepopulateDatabase,
+                ];
+
                 let cores = self
                     .res
                     .get::<ConsoleMapper>()
@@ -236,7 +247,7 @@ where
                     let core = game.core.to_owned().unwrap_or_else(|| cores[0].clone());
                     let i = cores.iter().position(|c| c == &core).unwrap_or_default();
 
-                    if let MenuEntry::Launch(ref mut launch_core) = entries[0] {
+                    if let MenuEntry::Launch(ref mut launch_core) = entries[1] {
                         let console_mapper = self.res.get::<ConsoleMapper>();
                         *launch_core = Some(console_mapper.get_core_name(&core));
                     }
@@ -245,9 +256,18 @@ where
                 } else {
                     self.core = None;
                 }
+
+                entries
             }
-            Entry::App(_) | Entry::Directory(_) => {}
-        }
+            Entry::App(_) | Entry::Directory(_) => {
+                vec![
+                    MenuEntry::Launch(None),
+                    MenuEntry::Reset,
+                    MenuEntry::RemoveFromRecents,
+                    MenuEntry::RepopulateDatabase,
+                ]
+            }
+        };
 
         let height = entries.len() as u32 * (styles.ui_font.size + SELECTION_MARGIN);
 
@@ -264,6 +284,7 @@ where
         );
         menu.set_background_color(Some(StylesheetColor::BackgroundHighlightBlend));
         self.menu = Some(menu);
+        self.menu_entries = entries;
 
         Ok(())
     }
@@ -395,8 +416,8 @@ where
             match event {
                 KeyEvent::Pressed(Key::Left) => {
                     if let Some(core) = self.core.as_mut() {
-                        let mut selected = MenuEntry::from_repr(menu.selected());
-                        if let MenuEntry::Launch(ref mut launch_core) = selected {
+                        let selected = &mut self.menu_entries[menu.selected()];
+                        if let MenuEntry::Launch(launch_core) = selected {
                             core.core = core.core.saturating_sub(1);
                             let console_mapper = self.res.get::<ConsoleMapper>();
                             *launch_core =
@@ -408,8 +429,8 @@ where
                 }
                 KeyEvent::Pressed(Key::Right) => {
                     if let Some(core) = self.core.as_mut() {
-                        let mut selected = MenuEntry::from_repr(menu.selected());
-                        if let MenuEntry::Launch(ref mut launch_core) = selected {
+                        let selected = &mut self.menu_entries[menu.selected()];
+                        if let MenuEntry::Launch(launch_core) = selected {
                             core.core = (core.core + 1).min(core.cores.len() - 1);
                             let console_mapper = self.res.get::<ConsoleMapper>();
                             *launch_core =
@@ -425,8 +446,26 @@ where
                     Ok(true)
                 }
                 KeyEvent::Pressed(Key::A) => {
-                    let selected = MenuEntry::from_repr(menu.selected());
+                    let selected = &self.menu_entries[menu.selected()];
                     match selected {
+                        MenuEntry::Favorite(_) => {
+                            let entry = self.entries.get_mut(self.list.selected()).unwrap();
+                            if let Entry::Game(game) = entry {
+                                game.favorite = !game.favorite;
+                                self.res
+                                    .get::<Database>()
+                                    .set_favorite(&game.path, game.favorite)?;
+                                self.list.set_item(
+                                    self.list.selected(),
+                                    format!(
+                                        "{}{}",
+                                        if game.favorite { "♥ " } else { "" },
+                                        entry.name()
+                                    ),
+                                );
+                            }
+                            commands.send(Command::Redraw).await?;
+                        }
                         MenuEntry::Launch(_) => {
                             let entry = self.entries.get_mut(self.list.selected()).unwrap();
                             if let (Some(core), Entry::Game(game)) = (self.core.as_ref(), entry) {
@@ -453,6 +492,7 @@ where
                                     }
                                 }
                             }
+                            commands.send(Command::Redraw).await?;
                         }
                         MenuEntry::RemoveFromRecents => {
                             if let Some(Entry::Game(game)) = self.entries.get(self.list.selected())
@@ -587,7 +627,9 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
 enum MenuEntry {
+    Favorite(bool),
     Launch(Option<String>),
     Reset,
     RemoveFromRecents,
@@ -595,18 +637,15 @@ enum MenuEntry {
 }
 
 impl MenuEntry {
-    fn from_repr(i: usize) -> Self {
-        match i {
-            0 => MenuEntry::Launch(None),
-            1 => MenuEntry::Reset,
-            2 => MenuEntry::RemoveFromRecents,
-            3 => MenuEntry::RepopulateDatabase,
-            _ => unreachable!("invalid menu entry"),
-        }
-    }
-
     fn text(&self, locale: &Locale) -> String {
         match self {
+            MenuEntry::Favorite(is_favorite) => {
+                if *is_favorite {
+                    locale.t("menu-unset-as-favorite")
+                } else {
+                    locale.t("menu-set-as-favorite")
+                }
+            }
             MenuEntry::Launch(core) => {
                 if let Some(core) = core.as_deref() {
                     locale.ta(

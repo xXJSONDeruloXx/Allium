@@ -11,12 +11,15 @@ sort-rating = ソート：評価
 sort-release-date = ソート：リリース日
 sort-random = ソート：ランダム
 sort-search = 検索
+sort-favorites = ソート:お気に入り
 
 populating-database = データベースへの入力...
     数分かかるかもしれません。
     お茶でも飲んでいいですよ！
 populating-games = ゲームへの入力... ({ $directory })
 
+menu-set-as-favorite = お気に入りに追加
+menu-unset-as-favorite = お気に入りから削除
 menu-launch = 起動
 menu-launch-with-core = { $core }で起動
 menu-reset = リセット

@@ -12,6 +12,7 @@ use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::{ButtonHint, ButtonIcon, Row, View};
+use itertools::Itertools;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
@@ -210,7 +211,33 @@ impl Sort for GamesSort {
 
         match self {
             GamesSort::Alphabetical(_) => {
+                let mut games = Vec::with_capacity(entries.len());
+                let mut i = 0;
+                while i < entries.len() {
+                    if matches!(entries[i], Entry::Game(_)) {
+                        match entries.remove(i) {
+                            Entry::Game(game) => games.push(game),
+                            _ => unreachable!(),
+                        }
+                    } else {
+                        i += 1;
+                    }
+                }
+
+                let db_games = database
+                    .select_games(&games.iter().map(|g| g.path.as_path()).collect::<Vec<_>>())?;
+
+                let games = games.into_iter().zip(db_games).collect::<Vec<_>>();
+                let (favorites, non_favorites): (Vec<_>, Vec<_>) =
+                    games.into_iter().partition(|(_, db_game)| {
+                        db_game.as_ref().map(|g| g.favorite).unwrap_or_default()
+                    });
+                let favorites = favorites.into_iter().map(|(g, _)| g).sorted_unstable();
+                let non_favorites = non_favorites.into_iter().map(|(g, _)| g).sorted_unstable();
+                entries.retain(|e| matches!(e, Entry::Directory(_) | Entry::App(_)));
                 entries.sort_unstable();
+                entries.extend(favorites.map(|g| Entry::Game(g)));
+                entries.extend(non_favorites.map(|g| Entry::Game(g)));
             }
             GamesSort::LastPlayed(_) => {
                 // With this current implementation, apps will appear before games.

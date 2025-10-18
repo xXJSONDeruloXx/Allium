@@ -215,6 +215,7 @@ impl View for Recents {
 pub enum RecentsSort {
     LastPlayed,
     MostPlayed,
+    Favorites,
     Random,
     Search(String),
 }
@@ -224,6 +225,7 @@ impl Sort for RecentsSort {
         match self {
             RecentsSort::LastPlayed => locale.t("sort-last-played"),
             RecentsSort::MostPlayed => locale.t("sort-most-played"),
+            RecentsSort::Favorites => locale.t("sort-favorites"),
             RecentsSort::Random => locale.t("sort-random"),
             RecentsSort::Search(_) => locale.t("sort-search"),
         }
@@ -232,7 +234,8 @@ impl Sort for RecentsSort {
     fn next(&self) -> Self {
         match self {
             RecentsSort::LastPlayed => RecentsSort::MostPlayed,
-            RecentsSort::MostPlayed => RecentsSort::Random,
+            RecentsSort::MostPlayed => RecentsSort::Favorites,
+            RecentsSort::Favorites => RecentsSort::Random,
             RecentsSort::Random => RecentsSort::LastPlayed,
             RecentsSort::Search(_) => RecentsSort::LastPlayed,
         }
@@ -251,6 +254,7 @@ impl Sort for RecentsSort {
         let games = match self {
             RecentsSort::LastPlayed => database.select_last_played(RECENT_GAMES_LIMIT),
             RecentsSort::MostPlayed => database.select_most_played(RECENT_GAMES_LIMIT),
+            RecentsSort::Favorites => database.select_favorites(RECENT_GAMES_LIMIT),
             RecentsSort::Random => database.select_random(RECENT_GAMES_LIMIT),
             RecentsSort::Search(query) => database.search(query, RECENT_GAMES_LIMIT),
         };
@@ -289,6 +293,7 @@ impl Sort for RecentsSort {
                     developer: game.developer,
                     publisher: game.publisher,
                     genres: game.genres,
+                    favorite: game.favorite,
                 })
             })
             .collect())

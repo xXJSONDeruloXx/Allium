@@ -9,14 +9,14 @@ use embedded_graphics::{
     prelude::*,
     primitives::Rectangle,
     text::{
-        renderer::{CharacterStyle, TextMetrics, TextRenderer},
         Baseline, DecorationColor,
+        renderer::{CharacterStyle, TextMetrics, TextRenderer},
     },
 };
 
-use rusttype::vector;
 use rusttype::Font;
 use rusttype::GlyphId;
+use rusttype::vector;
 
 use crate::display::color::Color;
 

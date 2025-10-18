@@ -11,12 +11,15 @@ sort-rating = Urut: Rating
 sort-release-date = Urut: Tanggal rilis
 sort-random = Urut: Acak
 sort-search = Cari
+sort-favorites = Urut: Favorit
 
 populating-database = Refresh daftar gim...
     Proses ini butuh beberapa menit.
     Sembari menunggu, ngopi dulu!
 populating-games = Refresh daftar gim... ({ $directory })
 
+menu-set-as-favorite = Tambahkan ke Favorit
+menu-unset-as-favorite = Hapus dari Favorit
 menu-launch = Mainkan
 menu-launch-with-core = Pilih emulator { $core }
 menu-reset = Ulangi buka

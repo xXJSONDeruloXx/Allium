@@ -1,6 +1,13 @@
+# Strings that are identical to en-US are omitted on purpose.
+
 populating-database = Populating database...
     This may take several minutes.
     Go grab a cup of tea!
+
+sort-favorites = Sort: Favourites
+
+menu-set-as-favorite = Set as Favourite
+menu-unset-as-favorite = Remove from Favourites
 
 settings-theme-highlight-color = Highlight Colour
 settings-theme-foreground-color = Foreground Colour

@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use common::{
     constants::ALLIUM_GAMES_DIR,
     database::{Database, NewGame},
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     consoles::ConsoleMapper,
-    entry::{game::Game, gamelist::GameList, lazy_image::LazyImage, short_name, Entry},
+    entry::{Entry, game::Game, gamelist::GameList, lazy_image::LazyImage, short_name},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -145,6 +145,7 @@ impl Directory {
                 developer: game.developer,
                 publisher: game.publisher,
                 genres: game.genres,
+                favorite: false,
             }))
         });
 
@@ -241,6 +242,7 @@ impl Directory {
                                     developer: game.developer.clone(),
                                     publisher: game.publisher.clone(),
                                     genres: game.genres.clone(),
+                                    favorite: game.favorite,
                                 }),
                                 Entry::App(_) | Entry::Directory(_) => None,
                             })
@@ -293,6 +295,7 @@ impl Directory {
                                         developer: game.developer.clone(),
                                         publisher: game.publisher.clone(),
                                         genres: game.genres.clone(),
+                                        favorite: game.favorite,
                                     }),
                                     Entry::App(_) | Entry::Directory(_) => None,
                                 })
@@ -395,6 +398,7 @@ impl Directory {
                     developer: game.developer,
                     publisher: game.publisher,
                     genres: game.genres,
+                    favorite: game.favorite,
                 }),
                 _ => None,
             })

@@ -3,6 +3,7 @@ name = "show-hotkeys"
 version = "0.1.0"
 edition = "2024"
 include = ["/src"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

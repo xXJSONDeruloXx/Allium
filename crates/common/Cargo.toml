@@ -2,6 +2,7 @@
 name = "common"
 version = "0.27.0"
 edition = "2024"
+license = "MIT"
 
 [lib]
 name = "common"

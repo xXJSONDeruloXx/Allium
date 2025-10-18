@@ -28,7 +28,7 @@ simulator-env:
 
 .PHONY: simulator
 simulator: simulator-env
-	RUST_LOG=trace RUST_BACKTRACE=1 ALLIUM_DATABASE=simulator/allium.db ALLIUM_BASE_DIR=simulator/.allium ALLIUM_SD_ROOT=simulator cargo run --bin $(bin) --features=simulator $(args)
+	RUST_LOG=debug RUST_BACKTRACE=1 ALLIUM_DATABASE=$(ROOT_DIR)/simulator/allium.db ALLIUM_BASE_DIR=$(ROOT_DIR)/simulator/.allium ALLIUM_SD_ROOT=$(ROOT_DIR)/simulator cargo run --bin $(bin) --features=simulator $(args)
 
 .PHONY: dist
 dist:

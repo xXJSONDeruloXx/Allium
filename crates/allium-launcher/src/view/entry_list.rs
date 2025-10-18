@@ -12,9 +12,10 @@ use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::{Stylesheet, StylesheetColor};
 use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Row, ScrollList, View};
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::{Dimensions, OriginDimensions, Size};
 use embedded_graphics::primitives::{CornerRadii, Primitive, PrimitiveStyle, RoundedRectangle};
-use embedded_graphics::Drawable;
+use log::{debug, trace};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -153,6 +154,7 @@ where
 
     pub fn select(&mut self, index: usize) {
         self.list.select(index);
+        debug!("Selected entry: {:?}", self.entries.get(index));
     }
 
     async fn select_entry(&mut self, commands: Sender<Command>) -> Result<()> {
@@ -312,8 +314,10 @@ where
             // TODO: relayout list if box art is enabled/disabled
             if let Some(entry) = self.entries.get_mut(self.list.selected()) {
                 if let Some(path) = entry.image() {
+                    trace!("Loading image from {:?}", path);
                     self.image.set_path(Some(path.to_path_buf()));
                 } else {
+                    trace!("No image for entry {:?}", entry);
                     self.image.set_path(None);
                 }
                 if self.image.should_draw() && self.image.draw(display, styles)? {
@@ -546,7 +550,14 @@ where
                     self.open_menu()?;
                     Ok(true)
                 }
-                _ => self.list.handle_key_event(event, commands, bubble).await,
+                _ => {
+                    let res = self.list.handle_key_event(event, commands, bubble).await?;
+                    debug!(
+                        "Selected entry: {:?}",
+                        self.entries.get(self.list.selected())
+                    );
+                    Ok(res)
+                }
             }
         }
     }

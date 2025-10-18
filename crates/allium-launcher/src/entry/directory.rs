@@ -13,7 +13,7 @@ use common::{
     locale::Locale,
 };
 use itertools::Itertools;
-use log::{error, trace};
+use log::{debug, error, trace};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -169,31 +169,32 @@ impl Directory {
         #[allow(unused)] locale: &Locale,
     ) -> Result<Vec<Entry>> {
         let mut entries: Vec<Entry> = Vec::with_capacity(64);
+        debug!("Populating entries for directory: {:?}", &self.path);
 
         let fingerprint = database.get_gamelist_fingerprint(&self.path)?;
         let should_parse_gamelist = |path: &Path| -> Result<bool> {
             if !path.exists() {
-                trace!("File doesn't exist, don't parse.");
+                debug!("File {path:?} doesn't exist, don't parse.");
                 return Ok(false);
             }
 
             if let Some(fingerprint) = fingerprint {
                 let Ok(metadata) = fs::metadata(path) else {
-                    trace!("Failed to get gamelist metadata, don't parse.");
+                    debug!("Failed to get gamelist metadata, don't parse.");
                     return Ok(false);
                 };
                 let file_size = metadata.len();
                 if file_size == fingerprint {
-                    trace!("Same gamelist size, not parsing.");
+                    debug!("Same gamelist size, not parsing.");
                     return Ok(false);
                 }
                 database.set_gamelist_fingerprint(&self.path, file_size)?;
-                trace!("Different gamelist size, parse gamelist.");
+                debug!("Different gamelist size, parse gamelist.");
                 Ok(true)
             } else {
-                trace!("No gamelist fingerprint, parse gamelist.");
+                debug!("No gamelist fingerprint, parse gamelist.");
                 let Ok(metadata) = fs::metadata(path) else {
-                    trace!("Failed to get gamelist metadata, don't parse.");
+                    debug!("Failed to get gamelist metadata, don't parse.");
                     return Ok(false);
                 };
                 let file_size = metadata.len();
@@ -204,6 +205,7 @@ impl Directory {
 
         let gamelist = self.path.join("gamelist.xml");
         if should_parse_gamelist(&gamelist)? {
+            debug!("Parsing gamelist.xml at {:?}", &gamelist);
             #[cfg(feature = "miyoo")]
             {
                 std::process::Command::new("show")
@@ -255,6 +257,7 @@ impl Directory {
         } else if !gamelist.exists() {
             let gamelist = self.path.join("miyoogamelist.xml");
             if should_parse_gamelist(&gamelist)? {
+                debug!("Parsing miyoogamelist.xml at {:?}", &gamelist);
                 #[cfg(feature = "miyoo")]
                 {
                     std::process::Command::new("show")
@@ -306,12 +309,22 @@ impl Directory {
             }
         }
 
+        trace!(
+            "Entries after gamelist: {:?}",
+            entries.iter().map(|e| e.path()).collect::<Vec<_>>()
+        );
+
         entries.extend(
             database
                 .select_games_in_directory(&self.path)?
                 .into_iter()
                 .map(Game::from_db)
                 .map(Entry::Game),
+        );
+
+        trace!(
+            "Entries after database: {:?}",
+            entries.iter().map(|e| e.path()).collect::<Vec<_>>()
         );
 
         entries.extend(
@@ -326,8 +339,19 @@ impl Directory {
                 .dedup_by(|a, b| a.name() == b.name()),
         );
 
+        trace!(
+            "Entries after filesystem: {:?}",
+            entries.iter().map(|e| e.path()).collect::<Vec<_>>()
+        );
+
         let mut uniques = HashSet::new();
         entries.retain(|e| uniques.insert(e.path().to_path_buf()));
+
+        trace!(
+            "Final entries for directory {:?}: {:?}",
+            &self.path,
+            entries.iter().map(|e| e.path()).collect::<Vec<_>>()
+        );
 
         for entry in entries.iter_mut() {
             if let Entry::Game(game) = entry {

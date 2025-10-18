@@ -65,7 +65,7 @@ impl Platform for MockPlatform {
     }
 
     fn device_model() -> String {
-        "Mock".to_string()
+        "Mock".into()
     }
 
     fn firmware() -> String {

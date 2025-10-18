@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::HashMap,
     fmt,
     fs::{self, File},
@@ -21,7 +22,7 @@ pub struct LocaleSettings {
 impl Default for LocaleSettings {
     fn default() -> Self {
         Self {
-            lang: "en-US".to_string(),
+            lang: "en-US".into(),
         }
     }
 }
@@ -67,19 +68,11 @@ impl Locale {
     }
 
     pub fn t(&self, key: &str) -> String {
-        self.loader.lookup(&self.lang, key).unwrap_or_else(|| {
-            warn!("failed to lookup key: {}", key);
-            String::new()
-        })
+        self.loader.lookup(&self.lang, key)
     }
 
-    pub fn ta(&self, key: &str, args: &HashMap<String, FluentValue<'_>>) -> String {
-        self.loader
-            .lookup_with_args(&self.lang, key, args)
-            .unwrap_or_else(|| {
-                warn!("failed to lookup key: {}", key);
-                String::new()
-            })
+    pub fn ta(&self, key: &str, args: &HashMap<Cow<'static, str>, FluentValue<'_>>) -> String {
+        self.loader.lookup_with_args(&self.lang, key, args)
     }
 
     pub fn language(&self) -> String {

@@ -3,19 +3,18 @@ use std::os::fd::AsRawFd;
 
 use anyhow::Result;
 use log::error;
-use nix::{ioctl_write_ptr_bad, request_code_none};
 use sysfs_gpio::{Direction, Pin};
 
 use crate::battery::Battery;
 
 const SARADC_IOC_MAGIC: u8 = b'a';
 
-ioctl_write_ptr_bad!(sar_init, request_code_none!(SARADC_IOC_MAGIC, 0), ());
-ioctl_write_ptr_bad!(
-    sar_set_channel_read_value,
-    request_code_none!(SARADC_IOC_MAGIC, 1),
-    AdcConfig
-);
+// Define ioctl request codes
+const SAR_INIT: u32 = nix::request_code_none!(SARADC_IOC_MAGIC, 0);
+const SAR_SET_CHANNEL_READ_VALUE: u32 = nix::request_code_none!(SARADC_IOC_MAGIC, 1);
+
+nix::ioctl_write_ptr_bad!(sar_init, SAR_INIT, ());
+nix::ioctl_write_ptr_bad!(sar_set_channel_read_value, SAR_SET_CHANNEL_READ_VALUE, AdcConfig);
 
 pub struct AdcConfig {
     _channel: i32,

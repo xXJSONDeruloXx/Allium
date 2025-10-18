@@ -577,7 +577,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -588,7 +588,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -626,7 +626,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -637,7 +637,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -671,7 +671,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -682,7 +682,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -703,7 +703,7 @@ mod tests {
 
         database
             .update_games(&[NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -726,7 +726,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -737,7 +737,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -758,7 +758,7 @@ mod tests {
 
         database
             .update_games(&[NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -781,7 +781,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -792,14 +792,14 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
                 rating: None,
                 release_date: None,
-                developer: Some("Square Enix".to_string()),
-                publisher: Some("Nintendo".to_string()),
+                developer: Some("Square Enix".to_owned()),
+                publisher: Some("Nintendo".to_owned()),
                 genres: Vec::new(),
             },
         ];
@@ -831,7 +831,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -842,7 +842,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -882,7 +882,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -893,7 +893,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -904,7 +904,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Three".to_string(),
+                name: "Game Three".to_owned(),
                 path: PathBuf::from("different_directory/Game Three.rom"),
                 image: Some(PathBuf::from("different_directory/Imgs/Game Three.png")),
                 core: None,
@@ -956,7 +956,7 @@ mod tests {
 
         let games = vec![
             NewGame {
-                name: "Game One".to_string(),
+                name: "Game One".to_owned(),
                 path: PathBuf::from("test_directory/Game One.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
                 core: None,
@@ -967,7 +967,7 @@ mod tests {
                 genres: Vec::new(),
             },
             NewGame {
-                name: "Game Two".to_string(),
+                name: "Game Two".to_owned(),
                 path: PathBuf::from("test_directory/Game Two.rom"),
                 image: Some(PathBuf::from("test_directory/Imgs/Game Two.png")),
                 core: None,
@@ -987,7 +987,7 @@ mod tests {
         db.set_core(&games[0].path, "CORE")?;
 
         let core = db.get_core(&games[0].path)?;
-        assert_eq!(core, Some("CORE".to_string()));
+        assert_eq!(core, Some("CORE".to_owned()));
 
         Ok(())
     }
@@ -997,7 +997,7 @@ mod tests {
         let db = Database::in_memory().unwrap();
 
         let mut games = vec![NewGame {
-            name: "Game One".to_string(),
+            name: "Game One".to_owned(),
             path: PathBuf::from("test_directory/Game One.rom"),
             image: Some(PathBuf::from("test_directory/Imgs/Game One.png")),
             core: None,
@@ -1005,14 +1005,15 @@ mod tests {
             release_date: None,
             developer: None,
             publisher: None,
-            genres: vec!["Action".to_string(), "Adventure".to_string()],
+            favorite: false,
+            genres: vec!["Action".to_owned(), "Adventure".to_owned()],
         }];
 
         db.update_games(&games).unwrap();
         let game = db.select_game(&games[0].path)?.unwrap();
         assert_eq!(
             game.genres,
-            vec!["Action".to_string(), "Adventure".to_string()]
+            vec!["Action".into(), "Adventure".into()]
         );
 
         games[0].genres = Vec::new();
@@ -1020,10 +1021,10 @@ mod tests {
         let game = db.select_game(&games[0].path)?.unwrap();
         assert!(game.genres.is_empty());
 
-        games[0].genres = vec!["Puzzle".to_string()];
+        games[0].genres = vec!["Puzzle".to_owned()];
         db.update_games(&games).unwrap();
         let game = db.select_game(&games[0].path)?.unwrap();
-        assert_eq!(game.genres, vec!["Puzzle".to_string()]);
+        assert_eq!(game.genres, vec!["Puzzle".to_owned()]);
 
         Ok(())
     }

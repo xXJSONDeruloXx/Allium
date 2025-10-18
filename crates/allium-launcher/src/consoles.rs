@@ -2,7 +2,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{Context, Result, anyhow, bail};
 use common::command::Command;
 use common::database::Database;
 use common::game_info::GameInfo;
@@ -256,26 +256,31 @@ mod tests {
     use std::env;
 
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_console_mapper() {
         let mut mapper = ConsoleMapper::new();
         mapper.consoles = vec![Console {
-            name: "Test".to_string(),
-            patterns: vec!["POKE".to_string(), "PKM".to_string()],
-            extensions: vec!["gb".to_string(), "gbc".to_string()],
+            name: "Test".into(),
+            patterns: vec!["POKE".into(), "PKM".into()],
+            extensions: vec!["gb".into(), "gbc".into()],
             cores: vec![],
             file_name: vec![],
         }];
 
         assert!(mapper.get_console(Path::new("Roms/POKE/rom.zip")).is_some());
         assert!(mapper.get_console(Path::new("Roms/PKM/rom.zip")).is_some());
-        assert!(mapper
-            .get_console(Path::new("Roms/Pokemon Mini (POKE)/rom.zip"))
-            .is_some());
-        assert!(mapper
-            .get_console(Path::new("Roms/POKE MINI/rom.zip"))
-            .is_none());
+        assert!(
+            mapper
+                .get_console(Path::new("Roms/Pokemon Mini (POKE)/rom.zip"))
+                .is_some()
+        );
+        assert!(
+            mapper
+                .get_console(Path::new("Roms/POKE MINI/rom.zip"))
+                .is_none()
+        );
         assert!(mapper.get_console(Path::new("Roms/rom.gb")).is_some());
         assert!(mapper.get_console(Path::new("Roms/rom.gbc")).is_some());
         assert!(mapper.get_console(Path::new("Roms/rom.gbc.zip")).is_some());
@@ -285,8 +290,12 @@ mod tests {
     }
 
     #[test]
+    #[serial(env_ALLIUM_BASE_DIR)]
     fn test_config() {
-        env::set_var("ALLIUM_BASE_DIR", "../../static/.allium");
+        // SAFETY: tests that depend on this env var are run serially
+        unsafe {
+            env::set_var("ALLIUM_BASE_DIR", "../../static/.allium");
+        }
 
         let mut mapper = ConsoleMapper::new();
         mapper.load_config().unwrap();
@@ -358,8 +367,12 @@ mod tests {
     }
 
     #[test]
+    #[serial(env_ALLIUM_BASE_DIR)]
     fn test_core_names() {
-        env::set_var("ALLIUM_BASE_DIR", "../../static/.allium");
+        // SAFETY: tests that depend on this env var are run serially
+        unsafe {
+            env::set_var("ALLIUM_BASE_DIR", "../../static/.allium");
+        }
 
         let mut mapper = ConsoleMapper::new();
         mapper.load_config().unwrap();

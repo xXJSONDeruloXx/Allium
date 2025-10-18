@@ -10,7 +10,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header("../../third-party/my283/usr/include/mi_ao.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 

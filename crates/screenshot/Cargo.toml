@@ -6,10 +6,9 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.71"
-clap = "4.4"
-framebuffer = "0.3.1"
-image = { version = "0.24.6", default-features = false, features = ["png"] }
-sysfs_gpio = "0.6.1"
-fast_image_resize = "2.7"
-log = "0.4"
+anyhow.workspace = true
+clap.workspace = true
+framebuffer.workspace = true
+image = { workspace = true, default-features = false, features = ["png"] }
+sysfs_gpio.workspace = true
+log.workspace = true

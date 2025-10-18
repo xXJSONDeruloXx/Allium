@@ -10,7 +10,6 @@ use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::{ButtonHint, ButtonIcon, Label, Row, SettingsList, View};
-use sysinfo::SystemExt;
 use tokio::sync::mpsc::Sender;
 
 use crate::view::settings::{ChildState, SettingsChild};
@@ -64,16 +63,16 @@ impl About {
                 Box::new(Label::new(Point::zero(), firmware, Alignment::Right, None)),
                 Box::new(Label::new(
                     Point::zero(),
-                    sys.long_os_version().map_or_else(
+                    sysinfo::System::long_os_version().map_or_else(
                         || locale.t("settings-about-unknown-value"),
-                        |s| s.trim().to_owned(),
+                        |s: String| s.trim().to_owned(),
                     ),
                     Alignment::Right,
                     None,
                 )),
                 Box::new(Label::new(
                     Point::zero(),
-                    sys.kernel_version()
+                    sysinfo::System::kernel_version()
                         .unwrap_or_else(|| locale.t("settings-about-unknown-value")),
                     Alignment::Right,
                     None,

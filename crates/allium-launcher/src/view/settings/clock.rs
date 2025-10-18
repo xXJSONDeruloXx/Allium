@@ -242,7 +242,7 @@ impl View for Clock {
                                 .await?
                                 .write_all(timezone.as_bytes())
                                 .await?;
-                            env::set_var("TZ", timezone);
+                            unsafe { env::set_var("TZ", timezone) };
                             self.list.set_right(
                                 0,
                                 Box::new(DateTime::new(

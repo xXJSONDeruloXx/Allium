@@ -8,4 +8,4 @@ edition = "2024"
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.66.1"
+bindgen.workspace = true

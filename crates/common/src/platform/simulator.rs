@@ -122,7 +122,7 @@ impl Platform for SimulatorPlatform {
     }
 
     fn device_model() -> String {
-        "Simulator".to_string()
+        "Simulator".into()
     }
 
     fn firmware() -> String {

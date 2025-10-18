@@ -124,7 +124,7 @@ mod tests {
         );
         assert_eq!(
             game_list.games[0].genres,
-            vec!["Strategy".to_string(), "Action".to_string()]
+            vec!["Strategy".to_owned(), "Action".to_owned()]
         );
         assert_eq!(game_list.games[0].rating, Some(9));
         assert_eq!(
@@ -180,16 +180,13 @@ mod tests {
         let s = &s.replace('&', "&amp;");
         let _: GameList = match quick_xml::de::from_str(s) {
             Ok(gamelist) => gamelist,
-            Err(quick_xml::DeError::InvalidXml(quick_xml::Error::EscapeError(
-                quick_xml::escape::EscapeError::UnterminatedEntity(..),
-            ))) => {
+            Err(_) => {
                 // Some scrapers produce ill-formed XML where ampersands (&) are not escaped,
                 // so we try to failover to replacing them to &amp;
                 // (https://github.com/RReverser/serde-xml-rs/issues/106)
                 let s = s.replace('&', "&amp;");
                 quick_xml::de::from_str(&s).unwrap()
             }
-            Err(e) => panic!("{:?}", e),
         };
     }
 }

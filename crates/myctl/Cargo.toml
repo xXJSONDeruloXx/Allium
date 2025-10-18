@@ -6,8 +6,8 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.71"
-clap = "4.3.8"
+anyhow.workspace = true
+clap.workspace = true
 ffi = { version = "0.1.0", path = "../ffi" }
-log = "0.4.19"
-simple_logger = { version = "4.2.0", default-features = false }
+log.workspace = true
+simple_logger = { workspace = true, default-features = false }

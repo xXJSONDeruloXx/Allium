@@ -11,19 +11,19 @@ simulator = ["common/simulator"]
 miyoo = ["common/miyoo"]
 
 [dependencies]
-anyhow = "1.0.70"
-embedded-graphics = "0.8.0"
-lazy_static = "1.4.0"
-serde = { version = "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
-tokio = { version = "1.28.2", features = ["full"] }
-strum = "0.24.1"
-async-trait = "0.1.68"
-type-map = "0.4.0"
-simple_logger = { version = "4.2.0", default-features = false }
-log = { version = "0.4.19", features = ["release_max_level_info"] }
-image = { version = "0.23", default-features = false, features = ["gif", "jpeg", "png"] }
-chrono = "0.4.26"
+anyhow.workspace = true
+embedded-graphics.workspace = true
+lazy_static.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tokio = { workspace = true, features = ["full"] }
+strum.workspace = true
+async-trait.workspace = true
+type-map.workspace = true
+simple_logger = { workspace = true, default-features = false }
+log = { workspace = true, features = ["release_max_level_info"] }
+image = { workspace = true, features = ["gif", "jpeg", "png"] }
+chrono.workspace = true
 
 [dependencies.common]
 path = "../common"

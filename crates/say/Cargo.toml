@@ -7,7 +7,7 @@ edition = "2024"
 
 [dependencies]
 common = { path = "../common" }
-anyhow = "1.0.71"
-embedded-graphics = "0.8.0"
-tokio = { version = "1.29.1", features = ["macros", "rt"] }
-clap = { version = "4.3.12", features = ["derive"] }
+anyhow.workspace = true
+embedded-graphics.workspace = true
+tokio = { workspace = true, features = ["macros", "rt"] }
+clap = { workspace = true, features = ["derive"] }

@@ -103,12 +103,12 @@ impl ActivityTracker {
                 .map(|e| {
                     let mut map = HashMap::new();
                     map.insert(
-                        "hours_decimal".to_string(),
+                        "hours_decimal".into(),
                         format!("{:.1}", (e.play_time.num_minutes() as f32 / 60.0)).into(),
                     );
-                    map.insert("hours".to_string(), e.play_time.num_hours().into());
+                    map.insert("hours".into(), e.play_time.num_hours().into());
                     map.insert(
-                        "minutes".to_string(),
+                        "minutes".into(),
                         (e.play_time.num_minutes() % 60).into(),
                     );
                     locale.ta("activity-tracker-play-time", &map)

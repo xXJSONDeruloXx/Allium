@@ -68,7 +68,7 @@ fn show(fb: &Framebuffer, frame: &mut [u8], path: impl AsRef<Path>) -> Result<()
     let h = fb.var_screen_info.yres as usize;
     let bpp = fb.var_screen_info.bits_per_pixel as usize / 8;
 
-    let mut image = image::io::Reader::open(path)?.decode()?;
+    let mut image = image::ImageReader::open(path)?.decode()?;
     if image.width() != w as u32 || image.height() != h as u32 {
         let new_h = (h as u32).min(w as u32 * image.height() / image.width());
         image = image.resize_to_fill(w as u32, new_h, image::imageops::FilterType::Nearest);

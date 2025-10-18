@@ -46,8 +46,8 @@ impl PartialOrd for Directory {
 impl Default for Directory {
     fn default() -> Self {
         Directory {
-            name: "Games".to_string(),
-            full_name: "Games".to_string(),
+            name: "Games".into(),
+            full_name: "Games".into(),
             path: ALLIUM_GAMES_DIR.to_owned(),
             image: LazyImage::Unknown(ALLIUM_GAMES_DIR.to_owned()),
         }
@@ -96,16 +96,13 @@ impl Directory {
         file.read_to_string(&mut s)?;
         let gamelist: GameList = match quick_xml::de::from_str(&s) {
             Ok(gamelist) => gamelist,
-            Err(quick_xml::DeError::InvalidXml(quick_xml::Error::EscapeError(
-                quick_xml::escape::EscapeError::UnterminatedEntity(..),
-            ))) => {
+            Err(_) => {
                 // Some scrapers produce ill-formed XML where ampersands (&) are not escaped,
                 // so we try to failover to replacing them to &amp;
                 // (https://github.com/RReverser/serde-xml-rs/issues/106)
                 s = s.replace('&', "&amp;");
                 quick_xml::de::from_str(&s)?
             }
-            Err(e) => return Err(e.into()),
         };
 
         let games = gamelist.games.into_iter().filter_map(|game| {
@@ -215,7 +212,7 @@ impl Directory {
                     .wait()?;
                 let mut map = std::collections::HashMap::new();
                 map.insert(
-                    "directory".to_string(),
+                    "directory".into(),
                     self.path
                         .file_name()
                         .unwrap_or_default()
@@ -266,7 +263,7 @@ impl Directory {
                         .wait()?;
                     let mut map = std::collections::HashMap::new();
                     map.insert(
-                        "directory".to_string(),
+                        "directory".into(),
                         self.path
                             .file_name()
                             .unwrap_or_default()

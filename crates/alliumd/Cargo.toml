@@ -11,17 +11,17 @@ miyoo = ["common/miyoo"]
 console = ["console-subscriber"]
 
 [dependencies]
-anyhow = "1.0.70"
-chrono = "0.4.26"
-console-subscriber = { version = "0.1.9", optional = true }
-enum-map = "2.5.0"
-lazy_static = "1.4.0"
-log = { version = "0.4.19", features = ["release_max_level_info"] }
-nix = "0.23"
-serde = { version = "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
-simple_logger = { version = "4.2.0", default-features = false }
-tokio = { version = "1.28.2", features = ["full"] }
+anyhow.workspace = true
+chrono.workspace = true
+console-subscriber = { workspace = true, optional = true }
+enum-map.workspace = true
+lazy_static.workspace = true
+log = { workspace = true, features = ["release_max_level_info"] }
+nix = { workspace = true, features = ["signal", "process"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+simple_logger = { workspace = true, default-features = false }
+tokio = { workspace = true, features = ["full"] }
 
 [dependencies.common]
 path = "../common"

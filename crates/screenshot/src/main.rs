@@ -1,9 +1,6 @@
 #![warn(clippy::all, rust_2018_idioms)]
 
-use std::{
-    num::NonZeroU32,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
@@ -88,22 +85,7 @@ fn screenshot(
     };
 
     if width != image.width() || height != image.height() {
-        let src_image = fast_image_resize::Image::from_vec_u8(
-            NonZeroU32::new(image.width()).unwrap(),
-            NonZeroU32::new(image.height()).unwrap(),
-            image.into_vec(),
-            fast_image_resize::PixelType::U8x3,
-        )?;
-        let mut dst_image = fast_image_resize::Image::new(
-            NonZeroU32::new(width).unwrap(),
-            NonZeroU32::new(height).unwrap(),
-            src_image.pixel_type(),
-        );
-        let mut resizer = fast_image_resize::Resizer::new(
-            fast_image_resize::ResizeAlg::Convolution(fast_image_resize::FilterType::Lanczos3),
-        );
-        resizer.resize(&src_image.view(), &mut dst_image.view_mut())?;
-        let image = RgbImage::from_raw(width, height, dst_image.into_vec()).unwrap();
+        let image = imageops::resize(&image, width, height, imageops::FilterType::Lanczos3);
         image.save(path)?;
     } else {
         image.save(path)?;

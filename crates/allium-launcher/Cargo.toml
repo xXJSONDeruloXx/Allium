@@ -11,26 +11,27 @@ simulator = ["common/simulator"]
 miyoo = ["common/miyoo"]
 
 [dependencies]
-anyhow = "1.0.70"
-chrono = { version = "0.4.26", features = ["serde"] }
-embedded-graphics = "0.8.0"
-lazy_static = "1.4.0"
-regex = "1.8.3"
-serde = { version = "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
-tokio = { version = "1.28.2", features = ["full"] }
-toml = "0.7.4"
-strum = "0.24.1"
-async-trait = "0.1.68"
-sysinfo = "0.29.10"
-type-map = "0.4.0"
-simple_logger = { version = "4.2.0", default-features = false }
-log = { version = "0.4.19", features = ["release_max_level_info"] }
-image = { version = "0.23", default-features = false, features = ["gif", "jpeg", "png"] }
-rand = "0.8.5"
-enum-map = "2.6.0"
-itertools = "0.12.0"
-quick-xml = { version = "0.31.0", features = ["serde", "serialize"] }
+anyhow.workspace = true
+async-trait.workspace = true
+chrono = { workspace = true, features = ["serde"] }
+embedded-graphics.workspace = true
+enum-map.workspace = true
+image = { workspace = true, features = ["gif", "jpeg", "png"] }
+itertools.workspace = true
+lazy_static.workspace = true
+log = { workspace = true, features = ["release_max_level_info"] }
+quick-xml = { workspace = true, features = ["serde", "serialize"] }
+rand.workspace = true
+regex.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+serial_test.workspace = true
+simple_logger = { workspace = true, default-features = false }
+strum.workspace = true
+sysinfo.workspace = true
+tokio = { workspace = true, features = ["full"] }
+toml.workspace = true
+type-map.workspace = true
 
 [dependencies.common]
 path = "../common"

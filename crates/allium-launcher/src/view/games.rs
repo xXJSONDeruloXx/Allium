@@ -315,7 +315,7 @@ impl Sort for GamesSort {
                 entries.extend(games.into_iter().map(|(game, _)| Entry::Game(game)));
             }
             GamesSort::Random(_) => {
-                entries.shuffle(&mut rand::thread_rng());
+                entries.shuffle(&mut rand::rng());
             }
         }
 

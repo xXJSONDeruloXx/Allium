@@ -600,7 +600,7 @@ impl MenuEntry {
                 if let Some(core) = core.as_deref() {
                     locale.ta(
                         "menu-launch-with-core",
-                        &[("core".to_string(), core.into())].into_iter().collect(),
+                        &[("core".into(), core.into())].into_iter().collect(),
                     )
                 } else {
                     locale.t("menu-launch")

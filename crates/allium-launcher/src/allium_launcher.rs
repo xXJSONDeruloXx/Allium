@@ -293,7 +293,7 @@ impl AlliumLauncher<DefaultPlatform> {
                             .wait()?;
                         let mut map = std::collections::HashMap::new();
                         map.insert(
-                            "directory".to_string(),
+                            "directory".into(),
                             dir.path
                                 .file_name()
                                 .unwrap_or_default()

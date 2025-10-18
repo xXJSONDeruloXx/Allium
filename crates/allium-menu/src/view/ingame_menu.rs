@@ -119,7 +119,7 @@ where
         if let Some(info) = retroarch_info.as_ref() {
             if info.max_disk_slots > 1 && !state.is_text_reader_open {
                 let mut map = HashMap::new();
-                map.insert("disk".to_string(), (info.disk_slot + 1).into());
+                map.insert("disk".into(), (info.disk_slot + 1).into());
                 menu.set_right(
                     MenuEntry::Continue as usize,
                     Box::new(Label::new(
@@ -308,7 +308,7 @@ where
             );
         } else {
             let mut map = HashMap::new();
-            map.insert("slot".to_string(), state_slot.into());
+            map.insert("slot".into(), state_slot.into());
             self.menu.set_right(
                 self.menu.selected(),
                 Box::new(Label::new(
@@ -440,7 +440,7 @@ where
                         RetroArchCommand::SetDiskSlot(info.disk_slot).send().await?;
 
                         let mut map = HashMap::new();
-                        map.insert("disk".to_string(), (info.disk_slot + 1).into());
+                        map.insert("disk".into(), (info.disk_slot + 1).into());
                         self.menu.set_right(
                             self.menu.selected(),
                             Box::new(Label::new(
@@ -457,7 +457,7 @@ where
                         RetroArchCommand::SetDiskSlot(info.disk_slot).send().await?;
 
                         let mut map = HashMap::new();
-                        map.insert("disk".to_string(), (info.disk_slot + 1).into());
+                        map.insert("disk".into(), (info.disk_slot + 1).into());
                         self.menu.set_right(
                             self.menu.selected(),
                             Box::new(Label::new(
@@ -519,7 +519,7 @@ where
                             }
                             if curr == MenuEntry::Continue as usize {
                                 let mut map = HashMap::new();
-                                map.insert("disk".to_string(), (info.disk_slot + 1).into());
+                                map.insert("disk".into(), (info.disk_slot + 1).into());
                                 self.menu.set_right(
                                     curr,
                                     Box::new(Label::new(

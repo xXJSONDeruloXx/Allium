@@ -11,14 +11,14 @@ simulator = ["common/simulator"]
 miyoo = ["common/miyoo"]
 
 [dependencies]
-anyhow = "1.0.70"
-embedded-graphics = "0.8.0"
-lazy_static = "1.4.0"
-tokio = { version = "1.28.2", features = ["full"] }
-async-trait = "0.1.68"
-type-map = "0.4.0"
-simple_logger = { version = "4.2.0", default-features = false }
-log = { version = "0.4.19", features = ["release_max_level_info"] }
+anyhow.workspace = true
+embedded-graphics.workspace = true
+lazy_static.workspace = true
+tokio = { workspace = true, features = ["full"] }
+async-trait.workspace = true
+type-map.workspace = true
+simple_logger = { workspace = true, default-features = false }
+log = { workspace = true, features = ["release_max_level_info"] }
 
 [dependencies.common]
 path = "../common"

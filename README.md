@@ -44,6 +44,7 @@ Allium supports both the Miyoo Mini and Miyoo Mini Plus on the same SD card.
 - Works without configuration
 - Box art (250px wide, PNG, JPG, GIF)
 - Supports gameslist.xml with nested folders
+- Favorites
 - Recents list (sort by last played or playtime)
 - Search games by name
 - Activity tracker
@@ -61,7 +62,6 @@ Allium supports both the Miyoo Mini and Miyoo Mini Plus on the same SD card.
 
 ## Planned Features
 (roughly in order of priority)
-- Favorites
 - Theme manager
     - Built-in themes
     - Save current theme to file

@@ -10,7 +10,7 @@ sort-most-played = Tri: Temps
 sort-rating = Tri: Note
 sort-release-date = Tri: Date de sortie
 sort-random = Tri: Aléatoire
-sort-search = Recherche
+sort-search = Tri: Recherche
 sort-favorites = Tri: Favoris
 
 populating-database = Génération de la BDD...

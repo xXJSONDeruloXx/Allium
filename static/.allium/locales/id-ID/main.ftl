@@ -10,7 +10,7 @@ sort-most-played = Urut: Sering main
 sort-rating = Urut: Rating
 sort-release-date = Urut: Tanggal rilis
 sort-random = Urut: Acak
-sort-search = Cari
+sort-search = Urut: Cari
 sort-favorites = Urut: Favorit
 
 populating-database = Refresh daftar gim...

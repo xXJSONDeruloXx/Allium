@@ -10,7 +10,7 @@ sort-most-played = 排序：最久玩
 sort-rating = 排序：評分
 sort-release-date = 排序：發布日期
 sort-random = 排序：隨機
-sort-search = 搜索
+sort-search = 排序：搜索
 sort-favorites = 排序:收藏
 
 populating-database = 填充數據庫...

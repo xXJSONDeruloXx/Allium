@@ -10,7 +10,7 @@ sort-most-played = Sortierung: Spielzeit
 sort-rating = Sortierung: Bewertung
 sort-release-date = Sortierung: Erscheinungsdatum
 sort-random = Sortierung: Zufall
-sort-search = Suche
+sort-search = Sortierung: Suche
 sort-favorites = Sortierung: Favoriten
 
 populating-database = Fülle Datenbank...

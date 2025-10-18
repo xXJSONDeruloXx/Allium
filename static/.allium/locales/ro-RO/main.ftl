@@ -10,7 +10,7 @@ sort-most-played = Ordine: Activitate
 sort-rating = Ordine: Evaluare
 sort-release-date = Ordine: Dată de lansare
 sort-random = Ordine: Aleatoriu
-sort-search = Caută
+sort-search = Ordine: Caută
 sort-favorites = Ordine: Favorite
 
 populating-database = Se populează baza de date...

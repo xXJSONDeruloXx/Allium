@@ -10,7 +10,7 @@ sort-most-played = Orden: Más jugados
 sort-rating = Orden: Calificación
 sort-release-date = Orden: Fecha de lanzamiento
 sort-random = Orden: Aleatorio
-sort-search = Buscar
+sort-search = Orden: Buscar
 sort-favorites = Orden: Favoritos
 
 populating-database = Creando la base de datos...

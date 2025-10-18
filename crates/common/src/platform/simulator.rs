@@ -3,7 +3,7 @@ use std::process;
 use std::rc::Rc;
 use std::time::Duration;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use async_trait::async_trait;
 use embedded_graphics::image::{Image, ImageRaw};
 use embedded_graphics::pixelcolor::raw::BigEndian;
@@ -11,15 +11,16 @@ use embedded_graphics::prelude::*;
 use embedded_graphics_simulator::{
     OutputSettingsBuilder, SimulatorDisplay, SimulatorEvent, Window,
 };
-use image::{buffer::ConvertBuffer, ImageBuffer, Rgba};
+use image::buffer::ConvertBuffer;
+use image::{ImageBuffer, Rgba};
 use itertools::iproduct;
 use log::{trace, warn};
 use sdl2::keyboard::Keycode;
 
 use crate::battery::Battery;
+use crate::display::Display;
 use crate::display::color::Color;
 use crate::display::settings::DisplaySettings;
-use crate::display::Display;
 use crate::geom::Rect;
 use crate::platform::{Key, KeyEvent, Platform};
 
@@ -62,7 +63,7 @@ impl Platform for SimulatorPlatform {
                         };
                     }
                     SimulatorEvent::KeyUp { keycode, .. } => {
-                        return KeyEvent::Released(Key::from(keycode))
+                        return KeyEvent::Released(Key::from(keycode));
                     }
                     SimulatorEvent::Quit => {
                         process::exit(0);

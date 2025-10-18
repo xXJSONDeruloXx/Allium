@@ -251,6 +251,15 @@ impl AlliumLauncher<DefaultPlatform> {
                 trace!("showing toast: {:?}", text);
                 self.toast = Some(Toast::new(text, duration));
             }
+            Command::ImageToast(image, text, duration) => {
+                trace!("showing image toast: {:?}", text);
+                self.toast = Some(Toast::with_image(image, text, duration));
+            }
+            Command::DismissToast => {
+                trace!("dismissing toast");
+                self.toast = None;
+                self.view.set_should_draw();
+            }
             Command::PopulateDb => {
                 #[cfg(feature = "miyoo")]
                 {

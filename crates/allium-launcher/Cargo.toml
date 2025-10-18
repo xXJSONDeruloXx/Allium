@@ -21,6 +21,7 @@ image = { workspace = true, features = ["gif", "jpeg", "png"] }
 itertools.workspace = true
 lazy_static.workspace = true
 log = { workspace = true, features = ["release_max_level_info"] }
+qrcode.workspace = true
 quick-xml = { workspace = true, features = ["serde", "serialize"] }
 rand.workspace = true
 regex.workspace = true

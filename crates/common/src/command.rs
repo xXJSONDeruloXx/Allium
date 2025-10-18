@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use image::{ImageBuffer, Rgba};
+
 use crate::display::color::Color;
 use crate::locale::LocaleSettings;
 use crate::{display::settings::DisplaySettings, stylesheet::Stylesheet};
@@ -19,6 +21,8 @@ pub enum Command {
     StartSearch,
     Search(String),
     Toast(String, Option<Duration>),
+    ImageToast(ImageBuffer<Rgba<u8>, Vec<u8>>, String, Option<Duration>),
+    DismissToast,
     PopulateDb,
     SaveStateScreenshot {
         path: String,

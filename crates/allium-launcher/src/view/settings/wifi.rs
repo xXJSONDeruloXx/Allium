@@ -12,6 +12,8 @@ use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::{ButtonHint, ButtonIcon, Label, Row, SettingsList, TextBox, Toggle, View};
 use common::wifi::{self, WiFiSettings};
+use log::warn;
+use qrcode::QrCode;
 use tokio::sync::mpsc::Sender;
 
 use crate::view::settings::{ChildState, SettingsChild};
@@ -235,9 +237,42 @@ impl View for Wifi {
                             .settings
                             .set_password(val.as_string().unwrap().to_string())?,
                         4 => self.settings.toggle_ntp(val.as_bool().unwrap())?,
-                        5 => self
-                            .settings
-                            .toggle_web_file_browser(val.as_bool().unwrap())?,
+                        5 => {
+                            let enabled = val.as_bool().unwrap();
+                            self.settings.toggle_web_file_browser(enabled)?;
+                            if enabled {
+                                let (fg_color, bg_color) = {
+                                    let styles = self.res.get::<Stylesheet>();
+                                    (styles.foreground_color, styles.highlight_color)
+                                };
+                                let commands = commands.clone();
+                                tokio::spawn(async move {
+                                    if wifi::wait_for_wifi().await.is_ok()
+                                        && let Some(ip_address) = wifi::ip_address()
+                                    {
+                                        let url = format!("http://{ip_address}/");
+                                        let Ok(code) = QrCode::new(url.as_bytes()) else {
+                                            warn!(
+                                                "Failed to generate QR code for web file explorer"
+                                            );
+                                            return;
+                                        };
+                                        let image = code
+                                            .render::<image::Rgba<u8>>()
+                                            .dark_color(fg_color.into())
+                                            .light_color(bg_color.into())
+                                            .min_dimensions(300, 300)
+                                            .build();
+                                        commands
+                                            .send(Command::ImageToast(image, url, None))
+                                            .await
+                                            .ok();
+                                    }
+                                });
+                            } else {
+                                commands.send(Command::DismissToast).await.ok();
+                            }
+                        }
                         6 => self.settings.toggle_telnet(val.as_bool().unwrap())?,
                         7 => self.settings.toggle_ftp(val.as_bool().unwrap())?,
                         _ => unreachable!("Invalid index"),
@@ -250,6 +285,7 @@ impl View for Wifi {
 
         match event {
             KeyEvent::Pressed(Key::B) => {
+                commands.send(Command::DismissToast).await.ok();
                 bubble.push_back(Command::CloseView);
                 Ok(true)
             }

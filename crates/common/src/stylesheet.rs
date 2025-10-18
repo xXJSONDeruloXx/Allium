@@ -119,7 +119,7 @@ impl StylesheetFont {
 
     /// Default CJK font.
     pub fn cjk_font() -> Self {
-        Self::new(PathBuf::from("/customer/app/wqy-microhei.ttc"), 32)
+        Self::new(ALLIUM_FONTS_DIR.join("NotoSansCJK.otf"), 32)
     }
 }
 

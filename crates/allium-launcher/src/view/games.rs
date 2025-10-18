@@ -236,8 +236,8 @@ impl Sort for GamesSort {
                 let non_favorites = non_favorites.into_iter().map(|(g, _)| g).sorted_unstable();
                 entries.retain(|e| matches!(e, Entry::Directory(_) | Entry::App(_)));
                 entries.sort_unstable();
-                entries.extend(favorites.map(|g| Entry::Game(g)));
-                entries.extend(non_favorites.map(|g| Entry::Game(g)));
+                entries.extend(favorites.map(Entry::Game));
+                entries.extend(non_favorites.map(Entry::Game));
             }
             GamesSort::LastPlayed(_) => {
                 // With this current implementation, apps will appear before games.

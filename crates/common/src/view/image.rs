@@ -3,17 +3,17 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use async_trait::async_trait;
-use embedded_graphics::image::ImageRaw;
 use embedded_graphics::Drawable;
-use image::{imageops, RgbaImage};
+use embedded_graphics::image::ImageRaw;
+use image::{RgbaImage, imageops};
 use log::{error, trace};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
 use crate::command::Command;
+use crate::display::Display;
 use crate::display::color::Color;
 use crate::display::image::round;
-use crate::display::Display;
 use crate::geom::{Alignment, Point, Rect};
 use crate::platform::{DefaultPlatform, KeyEvent, Platform};
 use crate::stylesheet::Stylesheet;
@@ -145,10 +145,10 @@ impl View for Image {
         display: &mut <DefaultPlatform as Platform>::Display,
         _styles: &Stylesheet,
     ) -> Result<bool> {
-        if self.image.is_none() {
-            if let Some(ref path) = self.path {
-                self.image = self.image(path, self.rect, self.mode, self.border_radius);
-            }
+        if self.image.is_none()
+            && let Some(ref path) = self.path
+        {
+            self.image = self.image(path, self.rect, self.mode, self.border_radius);
         }
 
         display.load(self.rect)?;

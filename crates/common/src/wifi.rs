@@ -36,10 +36,10 @@ impl WiFiSettings {
     pub fn load() -> Result<Self> {
         if ALLIUM_WIFI_SETTINGS.exists() {
             debug!("found state, loading from file");
-            if let Ok(json) = fs::read_to_string(ALLIUM_WIFI_SETTINGS.as_path()) {
-                if let Ok(json) = serde_json::from_str(&json) {
-                    return Ok(json);
-                }
+            if let Ok(json) = fs::read_to_string(ALLIUM_WIFI_SETTINGS.as_path())
+                && let Ok(json) = serde_json::from_str(&json)
+            {
+                return Ok(json);
             }
             warn!("failed to read state file, removing");
             fs::remove_file(ALLIUM_WIFI_SETTINGS.as_path())?;

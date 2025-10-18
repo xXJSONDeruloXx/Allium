@@ -2,10 +2,10 @@ use std::collections::VecDeque;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::{Dimensions, Size};
 use embedded_graphics::primitives::{Primitive, PrimitiveStyleBuilder, Rectangle, StrokeAlignment};
 use embedded_graphics::text::Text;
-use embedded_graphics::Drawable;
 use log::trace;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
@@ -167,8 +167,7 @@ impl View for ColorPicker {
     ) -> Result<bool> {
         trace!(
             "color picker key event: {:?}, state: {:?}",
-            event,
-            self.edit_state
+            event, self.edit_state
         );
         if let Some(state) = &mut self.edit_state {
             match event {

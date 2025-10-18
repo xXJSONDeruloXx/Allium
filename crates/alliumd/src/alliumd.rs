@@ -64,28 +64,28 @@ impl AlliumDState {
     pub fn load() -> Result<AlliumDState> {
         if ALLIUMD_STATE.exists() {
             debug!("found state, loading from file");
-            if let Ok(json) = fs::read_to_string(ALLIUMD_STATE.as_path()) {
-                if let Ok(this) = serde_json::from_str::<AlliumDState>(&json) {
-                    if Utc::now() < this.time {
-                        info!(
-                            "RTC is not working, advancing time to {}",
-                            this.time.format("%F %T")
-                        );
-                        let mut date = std::process::Command::new("date")
-                            .arg("--utc")
-                            .arg("--set")
-                            .arg(this.time.format("%F %T").to_string())
-                            .spawn()?;
-                        date.wait()?;
-                        let mut hwclock = std::process::Command::new("/sbin/hwclock")
-                            .arg("--systohc")
-                            .arg("--utc")
-                            .arg(this.time.format("%F %T").to_string())
-                            .spawn()?;
-                        hwclock.wait()?;
-                    }
-                    return Ok(this);
+            if let Ok(json) = fs::read_to_string(ALLIUMD_STATE.as_path())
+                && let Ok(this) = serde_json::from_str::<AlliumDState>(&json)
+            {
+                if Utc::now() < this.time {
+                    info!(
+                        "RTC is not working, advancing time to {}",
+                        this.time.format("%F %T")
+                    );
+                    let mut date = std::process::Command::new("date")
+                        .arg("--utc")
+                        .arg("--set")
+                        .arg(this.time.format("%F %T").to_string())
+                        .spawn()?;
+                    date.wait()?;
+                    let mut hwclock = std::process::Command::new("/sbin/hwclock")
+                        .arg("--systohc")
+                        .arg("--utc")
+                        .arg(this.time.format("%F %T").to_string())
+                        .spawn()?;
+                    hwclock.wait()?;
                 }
+                return Ok(this);
             }
             warn!("failed to read state file, removing");
             fs::remove_file(ALLIUMD_STATE.as_path())?;
@@ -180,12 +180,12 @@ impl AlliumD<DefaultPlatform> {
             }
 
             loop {
-                if let Some(menu) = self.menu.as_mut() {
-                    if menu.try_wait()?.is_some() {
-                        info!("menu process terminated, resuming game");
-                        self.menu = None;
-                        RetroArchCommand::Unpause.send().await?;
-                    }
+                if let Some(menu) = self.menu.as_mut()
+                    && menu.try_wait()?.is_some()
+                {
+                    info!("menu process terminated, resuming game");
+                    self.menu = None;
+                    RetroArchCommand::Unpause.send().await?;
                 }
 
                 if battery_interval.elapsed() >= BATTERY_UPDATE_INTERVAL {
@@ -371,13 +371,12 @@ impl AlliumD<DefaultPlatform> {
                                 .keys
                                 .iter()
                                 .all(|(k, pressed)| k == Key::Menu || !pressed)
+                            && let Some(game_info) = GameInfo::load()?
                         {
-                            if let Some(game_info) = GameInfo::load()? {
-                                if let Some(menu) = &mut self.menu {
-                                    terminate(menu).await?;
-                                } else if game_info.has_menu {
-                                    self.menu = Some(Command::new(ALLIUM_MENU.as_path()).spawn()?);
-                                }
+                            if let Some(menu) = &mut self.menu {
+                                terminate(menu).await?;
+                            } else if game_info.has_menu {
+                                self.menu = Some(Command::new(ALLIUM_MENU.as_path()).spawn()?);
                             }
                         }
                         self.is_menu_pressed_alone = false;

@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::Size;
 use embedded_graphics::primitives::{Circle, Primitive, PrimitiveStyle, RoundedRectangle};
-use embedded_graphics::Drawable;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 

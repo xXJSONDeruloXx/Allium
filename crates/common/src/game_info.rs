@@ -9,7 +9,7 @@ use chrono::{DateTime, Duration, Utc};
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use crate::constants::{ALLIUM_GAMES_DIR, ALLIUM_GAME_INFO, ALLIUM_SCRIPTS_DIR};
+use crate::constants::{ALLIUM_GAME_INFO, ALLIUM_GAMES_DIR, ALLIUM_SCRIPTS_DIR};
 
 #[derive(Debug, Serialize, Deserialize)]
 /// Information about a game. Used to restore a game after a restart, and to calculate playtime.

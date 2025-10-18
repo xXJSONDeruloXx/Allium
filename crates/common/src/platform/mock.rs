@@ -3,9 +3,9 @@ use async_trait::async_trait;
 use embedded_graphics::prelude::*;
 
 use crate::battery::Battery;
+use crate::display::Display;
 use crate::display::color::Color;
 use crate::display::settings::DisplaySettings;
-use crate::display::Display;
 use crate::geom::Rect;
 use crate::platform::{KeyEvent, Platform};
 

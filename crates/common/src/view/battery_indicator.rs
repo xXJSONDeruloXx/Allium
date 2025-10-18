@@ -3,11 +3,11 @@ use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use async_trait::async_trait;
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::Size;
 use embedded_graphics::primitives::{
     CornerRadii, Primitive, PrimitiveStyleBuilder, RoundedRectangle, Triangle,
 };
-use embedded_graphics::Drawable;
 use log::error;
 use tokio::sync::mpsc::Sender;
 

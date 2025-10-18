@@ -153,30 +153,29 @@ impl View for Recents {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            if keyboard
+        if let Some(keyboard) = self.keyboard.as_mut()
+            && keyboard
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
-            {
-                let mut query = None;
-                bubble.retain_mut(|c| match c {
-                    Command::ValueChanged(_, val) => {
-                        if let Value::String(val) = val {
-                            query = Some(val.clone());
-                        }
-                        false
+        {
+            let mut query = None;
+            bubble.retain_mut(|c| match c {
+                Command::ValueChanged(_, val) => {
+                    if let Value::String(val) = val {
+                        query = Some(val.clone());
                     }
-                    Command::CloseView => {
-                        self.keyboard = None;
-                        false
-                    }
-                    _ => true,
-                });
-                if let Some(query) = query {
-                    self.try_search(commands, query).await?;
+                    false
                 }
-                return Ok(true);
+                Command::CloseView => {
+                    self.keyboard = None;
+                    false
+                }
+                _ => true,
+            });
+            if let Some(query) = query {
+                self.try_search(commands, query).await?;
             }
+            return Ok(true);
         }
 
         match event {

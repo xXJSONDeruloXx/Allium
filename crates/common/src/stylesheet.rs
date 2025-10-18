@@ -91,16 +91,16 @@ impl StylesheetFont {
                 let entry = entry.unwrap();
                 let path = entry.path();
 
-                if let Some(name) = path.file_name() {
-                    if name.to_string_lossy().starts_with('.') {
-                        return None;
-                    }
+                if let Some(name) = path.file_name()
+                    && name.to_string_lossy().starts_with('.')
+                {
+                    return None;
                 }
 
-                if let Some(ext) = path.extension() {
-                    if ext == "ttf" || ext == "otf" || ext == "ttc" {
-                        return Some(path);
-                    }
+                if let Some(ext) = path.extension()
+                    && (ext == "ttf" || ext == "otf" || ext == "ttc")
+                {
+                    return Some(path);
                 }
                 None
             })
@@ -191,11 +191,11 @@ impl Stylesheet {
     pub fn load() -> Result<Self> {
         if ALLIUM_STYLESHEET.exists() {
             debug!("found state, loading from file");
-            if let Ok(json) = fs::read_to_string(ALLIUM_STYLESHEET.as_path()) {
-                if let Ok(mut styles) = serde_json::from_str::<Self>(&json) {
-                    styles.load_fonts()?;
-                    return Ok(styles);
-                }
+            if let Ok(json) = fs::read_to_string(ALLIUM_STYLESHEET.as_path())
+                && let Ok(mut styles) = serde_json::from_str::<Self>(&json)
+            {
+                styles.load_fonts()?;
+                return Ok(styles);
             }
             warn!("failed to read state file, removing");
             fs::remove_file(ALLIUM_STYLESHEET.as_path())?;

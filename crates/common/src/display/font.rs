@@ -185,10 +185,10 @@ where
             .chars()
             .map(|c| {
                 let mut g = self.font.glyph(c);
-                if g.id() == GlyphId(0) {
-                    if let Some(font_fallback) = self.font_fallback.as_ref() {
-                        g = font_fallback.glyph(c);
-                    }
+                if g.id() == GlyphId(0)
+                    && let Some(font_fallback) = self.font_fallback.as_ref()
+                {
+                    g = font_fallback.glyph(c);
                 }
                 g
             })
@@ -282,10 +282,10 @@ where
             .chars()
             .map(|c| {
                 let mut g = self.font.glyph(c);
-                if g.id() == GlyphId(0) {
-                    if let Some(font_fallback) = self.font_fallback.as_ref() {
-                        g = font_fallback.glyph(c);
-                    }
+                if g.id() == GlyphId(0)
+                    && let Some(font_fallback) = self.font_fallback.as_ref()
+                {
+                    g = font_fallback.glyph(c);
                 }
                 g
             })

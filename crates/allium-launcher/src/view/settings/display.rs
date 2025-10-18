@@ -5,8 +5,8 @@ use async_trait::async_trait;
 use common::command::Command;
 use common::constants::SELECTION_MARGIN;
 
-use common::display::settings::DisplaySettings;
 use common::display::Display as DisplayTrait;
+use common::display::settings::DisplaySettings;
 use common::geom::{Alignment, Point, Rect, Size};
 use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
@@ -197,10 +197,10 @@ impl View for Display {
         {
             if self.list.selected() == 0 && self.button_hints.len() == 2 {
                 self.edit_button = self.button_hints.remove(0);
-            } else if let Some(button) = self.edit_button.take() {
-                if self.button_hints.len() == 1 {
-                    self.button_hints.insert(0, button);
-                }
+            } else if let Some(button) = self.edit_button.take()
+                && self.button_hints.len() == 1
+            {
+                self.button_hints.insert(0, button);
             }
             while let Some(command) = bubble.pop_front() {
                 if let Command::ValueChanged(i, val) = command {

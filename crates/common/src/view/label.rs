@@ -5,9 +5,9 @@ use crate::command::Command;
 use crate::geom::{Alignment, Point, Rect};
 use anyhow::Result;
 use async_trait::async_trait;
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::Dimensions;
 use embedded_graphics::text::Text;
-use embedded_graphics::Drawable;
 use log::trace;
 use tokio::sync::mpsc::Sender;
 
@@ -289,10 +289,10 @@ where
         .bounding_box()
         .into();
 
-        if self.scrolling.is_some() {
-            if let Some(width) = self.width {
-                rect.w = rect.w.min(width);
-            }
+        if self.scrolling.is_some()
+            && let Some(width) = self.width
+        {
+            rect.w = rect.w.min(width);
         }
 
         rect

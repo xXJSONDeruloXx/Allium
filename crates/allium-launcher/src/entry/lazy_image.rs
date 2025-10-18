@@ -61,12 +61,11 @@ impl LazyImage {
         }
 
         // If it is itself an image, use that instead
-        if image.is_none() {
-            if let Some(ext) = path.extension().and_then(std::ffi::OsStr::to_str) {
-                if IMAGE_EXTENSIONS.contains(&ext) {
-                    image = Some(path.clone());
-                }
-            }
+        if image.is_none()
+            && let Some(ext) = path.extension().and_then(std::ffi::OsStr::to_str)
+            && IMAGE_EXTENSIONS.contains(&ext)
+        {
+            image = Some(path.clone());
         }
 
         *self = match image {

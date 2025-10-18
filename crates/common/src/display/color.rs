@@ -1,6 +1,6 @@
 use std::fmt;
 
-use embedded_graphics::pixelcolor::{raw::RawU32, Rgb888};
+use embedded_graphics::pixelcolor::{Rgb888, raw::RawU32};
 use embedded_graphics::prelude::{PixelColor, RawData, RgbColor};
 use image::Rgba;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

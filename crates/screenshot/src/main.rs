@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use clap::Parser;
 use framebuffer::Framebuffer;
-use image::{imageops, Pixel, Rgb, RgbImage};
+use image::{Pixel, Rgb, RgbImage, imageops};
 use sysfs_gpio::{Direction, Pin};
 
 #[derive(Parser, Debug)]

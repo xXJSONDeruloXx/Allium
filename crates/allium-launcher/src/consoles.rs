@@ -184,10 +184,10 @@ impl ConsoleMapper {
         game: &mut Game,
         disable_savestate_auto_load: bool,
     ) -> Result<Option<Command>> {
-        if !game.path.exists() {
-            if let Some(old) = Game::resync(&mut game.path)? {
-                database.update_game_path(&old, &game.path)?;
-            }
+        if !game.path.exists()
+            && let Some(old) = Game::resync(&mut game.path)?
+        {
+            database.update_game_path(&old, &game.path)?;
         }
 
         let image = game.image().map(Path::to_path_buf);

@@ -357,10 +357,10 @@ impl Directory {
         );
 
         for entry in entries.iter_mut() {
-            if let Entry::Game(game) = entry {
-                if let Some(core) = database.get_core(&game.path)? {
-                    game.core = Some(core);
-                }
+            if let Entry::Game(game) = entry
+                && let Some(core) = database.get_core(&game.path)?
+            {
+                game.core = Some(core);
             }
         }
 

@@ -14,10 +14,10 @@ use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::{ButtonHint, Row, View};
 use common::view::{ButtonIcon, Keyboard};
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::{Dimensions, Size};
 use embedded_graphics::primitives::{Primitive, PrimitiveStyle, Rectangle, RoundedRectangle};
 use embedded_graphics::text::Text;
-use embedded_graphics::Drawable;
 use log::{error, trace};
 use tokio::sync::mpsc::Sender;
 

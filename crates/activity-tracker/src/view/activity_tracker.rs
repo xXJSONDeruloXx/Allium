@@ -107,10 +107,7 @@ impl ActivityTracker {
                         format!("{:.1}", (e.play_time.num_minutes() as f32 / 60.0)).into(),
                     );
                     map.insert("hours".into(), e.play_time.num_hours().into());
-                    map.insert(
-                        "minutes".into(),
-                        (e.play_time.num_minutes() % 60).into(),
-                    );
+                    map.insert("minutes".into(), (e.play_time.num_minutes() % 60).into());
                     locale.ta("activity-tracker-play-time", &map)
                 })
                 .map(|s| {

@@ -72,8 +72,8 @@ impl View for Toast {
         let mut text_y = (h - styles.ui_font.size * lines) as i32 / 2;
 
         let image_rect = if let Some(image) = &self.image {
-            let image_w = image.width() as u32;
-            let image_h = image.height() as u32;
+            let image_w = image.width();
+            let image_h = image.height();
             let x = (w - image_w) as i32 / 2;
             let y = (h - image_h) as i32 / 2 - 8 - styles.ui_font.size as i32;
 
@@ -100,7 +100,7 @@ impl View for Toast {
 
         let mut rect = text.bounding_box();
         if let Some(image_rect) = image_rect {
-            rect = common::geom::Rect::union(&rect.into(), &image_rect.into()).into();
+            rect = common::geom::Rect::union(&rect.into(), &image_rect).into();
         }
 
         let x = rect.top_left.x;
@@ -122,7 +122,7 @@ impl View for Toast {
             let image_raw: ImageRaw<'_, Color> = ImageRaw::new(image, image_rect.w);
             let image = embedded_graphics::image::Image::new(
                 &image_raw,
-                embedded_graphics::geometry::Point::new(image_rect.x as i32, image_rect.y as i32),
+                embedded_graphics::geometry::Point::new(image_rect.x, image_rect.y),
             );
             image.draw(display)?;
         }

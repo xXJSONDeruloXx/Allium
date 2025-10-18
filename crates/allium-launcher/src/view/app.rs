@@ -18,11 +18,11 @@ use log::{trace, warn};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
+use crate::view::Recents;
 use crate::view::apps::AppsState;
 use crate::view::games::GamesState;
 use crate::view::recents::RecentsState;
 use crate::view::settings::SettingsState;
-use crate::view::Recents;
 use crate::view::{Apps, Games, Settings};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

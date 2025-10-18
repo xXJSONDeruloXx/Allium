@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{arg, value_parser, Command};
+use clap::{Command, arg, value_parser};
 use simple_logger::SimpleLogger;
 
 mod display;

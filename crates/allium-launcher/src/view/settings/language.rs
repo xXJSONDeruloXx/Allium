@@ -52,11 +52,7 @@ impl Language {
                     .iter()
                     .map(|l| {
                         let name = locale.t(&format!("lang-{}", l));
-                        if name.is_empty() {
-                            l.clone()
-                        } else {
-                            name
-                        }
+                        if name.is_empty() { l.clone() } else { name }
                     })
                     .collect(),
                 Alignment::Right,

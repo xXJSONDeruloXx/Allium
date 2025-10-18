@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     battery::Battery,
-    display::{settings::DisplaySettings, Display},
+    display::{Display, settings::DisplaySettings},
 };
 
 #[cfg(feature = "miyoo")]

@@ -3,16 +3,16 @@ use std::collections::VecDeque;
 use anyhow::Result;
 use async_trait::async_trait;
 use embedded_graphics::{
+    Drawable,
     prelude::{Dimensions, OriginDimensions, Size},
     primitives::{Primitive, PrimitiveStyleBuilder, Rectangle, RoundedRectangle},
     text::Text,
-    Drawable,
 };
 use strum::{EnumCount, EnumIter, FromRepr, IntoEnumIterator};
 use tokio::sync::mpsc::Sender;
 
 use crate::command::{Command, Value};
-use crate::display::{font::FontTextStyleBuilder, Display};
+use crate::display::{Display, font::FontTextStyleBuilder};
 use crate::geom::{self, Alignment, Point, Rect};
 use crate::locale::Locale;
 use crate::platform::{DefaultPlatform, Key, KeyEvent, Platform};

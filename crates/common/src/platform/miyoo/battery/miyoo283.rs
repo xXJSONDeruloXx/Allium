@@ -14,7 +14,11 @@ const SAR_INIT: u32 = nix::request_code_none!(SARADC_IOC_MAGIC, 0);
 const SAR_SET_CHANNEL_READ_VALUE: u32 = nix::request_code_none!(SARADC_IOC_MAGIC, 1);
 
 nix::ioctl_write_ptr_bad!(sar_init, SAR_INIT, ());
-nix::ioctl_write_ptr_bad!(sar_set_channel_read_value, SAR_SET_CHANNEL_READ_VALUE, AdcConfig);
+nix::ioctl_write_ptr_bad!(
+    sar_set_channel_read_value,
+    SAR_SET_CHANNEL_READ_VALUE,
+    AdcConfig
+);
 
 pub struct AdcConfig {
     _channel: i32,

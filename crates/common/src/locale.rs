@@ -7,12 +7,12 @@ use std::{
 
 use anyhow::Result;
 use fluent_templates::{
-    fluent_bundle::FluentValue, loader::langid, ArcLoader, LanguageIdentifier, Loader,
+    ArcLoader, LanguageIdentifier, Loader, fluent_bundle::FluentValue, loader::langid,
 };
 use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 
-use crate::constants::{ALLIUM_LOCALES_DIR, ALLIUM_LOCALE_SETTINGS};
+use crate::constants::{ALLIUM_LOCALE_SETTINGS, ALLIUM_LOCALES_DIR};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocaleSettings {

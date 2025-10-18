@@ -1,12 +1,12 @@
-use anyhow::{anyhow, bail, Result};
+use anyhow::{Result, anyhow, bail};
+use embedded_graphics::Pixel;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::Rectangle;
-use embedded_graphics::Pixel;
 use framebuffer::Framebuffer;
 use log::{trace, warn};
 
-use crate::display::color::Color;
 use crate::display::Display;
+use crate::display::color::Color;
 use crate::geom::Rect;
 
 pub struct Buffer {
@@ -26,8 +26,7 @@ impl FramebufferDisplay {
         let iface = Framebuffer::new("/dev/fb0")?;
         trace!(
             "init fb: var_screen_info: {:?}, fix_screen_info: {:?}",
-            iface.var_screen_info,
-            iface.fix_screen_info,
+            iface.var_screen_info, iface.fix_screen_info,
         );
 
         let background = iface.read_frame();

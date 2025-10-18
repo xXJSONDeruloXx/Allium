@@ -3,15 +3,15 @@
 use anyhow::Result;
 use clap::Parser;
 use common::{
-    display::{color::Color, font::FontTextStyleBuilder, Display},
+    display::{Display, color::Color, font::FontTextStyleBuilder},
     platform::{DefaultPlatform, Platform},
     stylesheet::Stylesheet,
 };
 use embedded_graphics::{
+    Drawable,
     prelude::{Dimensions, OriginDimensions, Point, Size},
     primitives::{CornerRadii, Primitive, PrimitiveStyle, RoundedRectangle},
     text::{Alignment, Text},
-    Drawable,
 };
 
 #[derive(Parser, Debug)]

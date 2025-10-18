@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use anyhow::Result;
 use async_trait::async_trait;
+use embedded_graphics::Drawable;
 use embedded_graphics::prelude::Size;
 use embedded_graphics::primitives::{Primitive, PrimitiveStyle, Rectangle, RoundedRectangle};
-use embedded_graphics::Drawable;
 use tokio::sync::mpsc::Sender;
 
 use crate::display::Display;
@@ -289,23 +289,23 @@ impl View for SettingsList {
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
         if self.focused {
-            if let Some(selected) = self.right.get_mut(self.selected) {
-                if selected.handle_key_event(event, command, bubble).await? {
-                    bubble.retain_mut(|cmd| match cmd {
-                        Command::TrapFocus => false,
-                        Command::Unfocus => {
-                            self.focused = false;
-                            self.dirty = true;
-                            false
-                        }
-                        Command::ValueChanged(i, _) => {
-                            *i = self.selected;
-                            true
-                        }
-                        _ => true,
-                    });
-                    return Ok(true);
-                }
+            if let Some(selected) = self.right.get_mut(self.selected)
+                && selected.handle_key_event(event, command, bubble).await?
+            {
+                bubble.retain_mut(|cmd| match cmd {
+                    Command::TrapFocus => false,
+                    Command::Unfocus => {
+                        self.focused = false;
+                        self.dirty = true;
+                        false
+                    }
+                    Command::ValueChanged(i, _) => {
+                        *i = self.selected;
+                        true
+                    }
+                    _ => true,
+                });
+                return Ok(true);
             }
             Ok(false)
         } else if !self.left.is_empty() {
@@ -336,22 +336,22 @@ impl View for SettingsList {
                     Ok(true)
                 }
                 KeyEvent::Pressed(Key::A) => {
-                    if let Some(selected) = self.right.get_mut(self.selected) {
-                        if selected.handle_key_event(event, command, bubble).await? {
-                            bubble.retain_mut(|cmd| match cmd {
-                                Command::TrapFocus => {
-                                    self.focused = true;
-                                    self.dirty = true;
-                                    false
-                                }
-                                Command::ValueChanged(i, _) => {
-                                    *i = self.selected;
-                                    true
-                                }
-                                _ => true,
-                            });
-                            return Ok(true);
-                        }
+                    if let Some(selected) = self.right.get_mut(self.selected)
+                        && selected.handle_key_event(event, command, bubble).await?
+                    {
+                        bubble.retain_mut(|cmd| match cmd {
+                            Command::TrapFocus => {
+                                self.focused = true;
+                                self.dirty = true;
+                                false
+                            }
+                            Command::ValueChanged(i, _) => {
+                                *i = self.selected;
+                                true
+                            }
+                            _ => true,
+                        });
+                        return Ok(true);
                     }
                     Ok(false)
                 }

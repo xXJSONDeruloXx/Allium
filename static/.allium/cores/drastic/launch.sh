@@ -8,21 +8,21 @@ set_snd_level() {
     start_time=$(date +%s)
     while [ ! -e /proc/mi_modules/mi_ao/mi_ao0 ]; do
         sleep 0.2
-        elapsed_time=$(( $(date +%s) - start_time ))
+        elapsed_time=$(($(date +%s) - start_time))
         if [ "$elapsed_time" -ge 30 ]; then
             return 1
         fi
     done
 
-    echo "set_ao_mute 0" > /proc/mi_modules/mi_ao/mi_ao0
-    echo "set_ao_volume 0 -9dB" > /proc/mi_modules/mi_ao/mi_ao0
-    echo "set_ao_volume 1 -9dB" > /proc/mi_modules/mi_ao/mi_ao0
+    echo "set_ao_mute 0" >/proc/mi_modules/mi_ao/mi_ao0
+    echo "set_ao_volume 0 -9dB" >/proc/mi_modules/mi_ao/mi_ao0
+    echo "set_ao_volume 1 -9dB" >/proc/mi_modules/mi_ao/mi_ao0
 
 }
 
 set_snd_level &
 
-"$ROOT"/.allium/cores/drastic/launch_drastic.sh "$@"
+"$ROOT"/.allium/cores/drastic/drastic/launch.sh "$@"
 
 if [ -f /mnt/SDCARD/.tmp_update/script/start_audioserver.sh ]; then
     /mnt/SDCARD/.tmp_update/script/start_audioserver.sh

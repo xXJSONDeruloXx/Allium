@@ -13,7 +13,7 @@ ifeq ($(PLATFORM),arm64)
 endif
 
 .PHONY: all
-all: dist build package-build $(DIST_DIR)/RetroArch/retroarch $(DIST_DIR)/.allium/bin/dufs migrations
+all: dist build package-build $(DIST_DIR)/RetroArch/retroarch $(DIST_DIR)/.allium/bin/dufs $(DIST_DIR)/.allium/cores/drastic/launch.sh migrations
 
 .PHONY: clean
 clean:
@@ -63,16 +63,13 @@ package-build:
 
 MIGRATIONS_DIR := $(DIST_DIR)/.allium/migrations
 .PHONY: migrations
-migrations: $(MIGRATIONS_DIR)/0000-retroarch-config/retroarch-config.zip $(MIGRATIONS_DIR)/0001-retroarch-core-overrides/retroarch-core-overrides.zip $(MIGRATIONS_DIR)/0002-drastic-1.8/drastic.zip
+migrations: $(MIGRATIONS_DIR)/0000-retroarch-config/retroarch-config.zip $(MIGRATIONS_DIR)/0001-retroarch-core-overrides/retroarch-core-overrides.zip
 
 $(MIGRATIONS_DIR)/0000-retroarch-config/retroarch-config.zip:
 	migrations/0000-retroarch-config/package.sh
 
 $(MIGRATIONS_DIR)/0001-retroarch-core-overrides/retroarch-core-overrides.zip:
 	migrations/0001-retroarch-core-overrides/package.sh
-
-$(MIGRATIONS_DIR)/0002-drastic-1.8/drastic.zip:
-	migrations/0002-drastic-1.8/package.sh
 
 .PHONY: retroarch
 retroarch: $(RETROARCH)/retroarch
@@ -86,6 +83,13 @@ $(RETROARCH)/retroarch:
 $(DIST_DIR)/.allium/bin/dufs:
 	cd third-party/dufs && cross build --release --target=$(CROSS_TARGET_TRIPLE)
 	cp "third-party/dufs/target/$(CROSS_TARGET_TRIPLE)/release/dufs" "$(DIST_DIR)/.allium/bin/"
+
+DRASTIC_URL := https://github.com/steward-fu/nds/releases/download/v1.8/drastic-v1.8_miyoo.zip
+$(DIST_DIR)/.allium/cores/drastic/launch.sh:
+	wget "$(DRASTIC_URL)" -O /tmp/drastic.zip
+	mkdir -p $(DIST_DIR)/.allium/cores/drastic/drastic
+	unzip -o /tmp/drastic.zip -d $(DIST_DIR)/.allium/cores/drastic/drastic
+	rm /tmp/drastic.zip
 
 .PHONY: lint
 lint:

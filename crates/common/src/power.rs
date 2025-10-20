@@ -10,7 +10,6 @@ use crate::constants::ALLIUM_POWER_SETTINGS;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PowerSettings {
     pub power_button_action: PowerButtonAction,
-    #[serde(default = "PowerButtonAction::shutdown")]
     pub lid_close_action: PowerButtonAction,
     pub auto_sleep_when_charging: bool,
     pub auto_sleep_duration_minutes: i32,

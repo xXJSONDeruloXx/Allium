@@ -1,7 +1,7 @@
 ROOT_DIR := $(shell pwd)
 BUILD_DIR := target/arm-unknown-linux-gnueabihf/release
 DIST_DIR := dist
-RETROARCH := third-party/RetroArch
+RETROARCH := third-party/RetroArch-patch
 TOOLCHAIN := mholdg16/miyoomini-toolchain:latest
 
 CROSS_TARGET_TRIPLE := arm-unknown-linux-gnueabihf
@@ -74,11 +74,11 @@ $(MIGRATIONS_DIR)/0001-retroarch-core-overrides/retroarch-core-overrides.zip:
 .PHONY: retroarch
 retroarch: $(RETROARCH)/retroarch
 
-$(DIST_DIR)/RetroArch/retroarch: $(RETROARCH)/retroarch
-	rsync -a $(RETROARCH)/retroarch "$(DIST_DIR)/RetroArch"
+$(DIST_DIR)/RetroArch/retroarch: $(RETROARCH)/bin/retroarch_miyoo354
+	cp "$(RETROARCH)/bin/retroarch_miyoo354" "$(DIST_DIR)/RetroArch/retroarch"
 
-$(RETROARCH)/retroarch:
-	docker run --rm -v /$(ROOT_DIR)/third-party:/root/workspace $(TOOLCHAIN) bash -c "source /root/.bashrc; cd RetroArch; make clean all MIYOO354=1 PACKAGE_NAME=retroarch"
+$(RETROARCH)/bin/retroarch_miyoo354:
+	docker run --rm -v /$(ROOT_DIR)/$(RETROARCH):/root/workspace $(TOOLCHAIN) bash -c "source /root/.bashrc; make clean all"
 
 $(DIST_DIR)/.allium/bin/dufs:
 	cd third-party/dufs && cross build --release --target=$(CROSS_TARGET_TRIPLE)

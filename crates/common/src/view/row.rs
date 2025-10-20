@@ -146,9 +146,9 @@ where
             for entry in &mut self.children.iter_mut() {
                 entry.draw(display, styles)?;
             }
-        } else {
+        } else if self.children.iter().any(|c| c.should_draw()) {
             for entry in &mut self.children.iter_mut() {
-                drawn |= entry.should_draw() && entry.draw(display, styles)?;
+                drawn |= entry.draw(display, styles)?;
             }
         }
         Ok(drawn)

@@ -40,7 +40,7 @@ where
     B: Battery + 'static,
 {
     rect: Rect,
-    row: Row<Box<dyn View>>,
+    status_bar: Row<Box<dyn View>>,
     views: (Recents, Games, Apps, Settings),
     selected: usize,
     tabs: Row<Label<String>>,
@@ -78,7 +78,7 @@ where
             children.push(Box::new(clock));
         }
 
-        let row: Row<Box<dyn View>> = Row::new(
+        let status_bar: Row<Box<dyn View>> = Row::new(
             Point::new(w as i32 - 12, y + 8),
             children,
             Alignment::Right,
@@ -132,7 +132,7 @@ where
             rect,
             views,
             selected,
-            row,
+            status_bar,
             tabs,
             // title,
             dirty: true,
@@ -278,24 +278,30 @@ where
         }
 
         let mut drawn = false;
-        drawn |= self.row.should_draw() && self.row.draw(display, styles)?;
-        // drawn |= self.title.should_draw() && self.title.draw(display, styles)?;
-        drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
 
-        if self.tabs.should_draw() && self.tabs.draw(display, styles)? {
-            drawn = true;
+        if self.tabs.should_draw() || self.status_bar.should_draw() {
+            display.load(
+                self.tabs
+                    .bounding_box(styles)
+                    .union(&self.status_bar.bounding_box(styles)),
+            )?;
+            // drawn |= self.title.should_draw() && self.title.draw(display, styles)?;
+            drawn |= self.tabs.should_draw() && self.tabs.draw(display, styles)?;
+            drawn |= self.status_bar.should_draw() && self.status_bar.draw(display, styles)?;
         }
+
+        drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
 
         Ok(drawn)
     }
 
     fn should_draw(&self) -> bool {
-        self.row.should_draw() || self.view().should_draw() || self.tabs.should_draw()
+        self.status_bar.should_draw() || self.view().should_draw() || self.tabs.should_draw()
     }
 
     fn set_should_draw(&mut self) {
         self.dirty = true;
-        self.row.set_should_draw();
+        self.status_bar.set_should_draw();
         self.view_mut().set_should_draw();
         self.tabs.set_should_draw();
     }
@@ -330,7 +336,7 @@ where
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        vec![&self.row, self.view(), &self.tabs]
+        vec![&self.status_bar, self.view(), &self.tabs]
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
@@ -341,7 +347,7 @@ where
             3 => &mut self.views.3,
             _ => unreachable!(),
         };
-        vec![&mut self.row, view, &mut self.tabs]
+        vec![&mut self.status_bar, view, &mut self.tabs]
     }
 
     fn bounding_box(&mut self, _styles: &Stylesheet) -> Rect {

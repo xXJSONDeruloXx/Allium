@@ -66,6 +66,9 @@ Allium supports both the Miyoo Mini and Miyoo Mini Plus on the same SD card.
     - Built-in themes
     - Save current theme to file
     - Background images
+- Activity tracker
+    - Track play sessions using RTC
+- Battery history
 - UI improvements:
     - Folder icon
     - Volume indicator

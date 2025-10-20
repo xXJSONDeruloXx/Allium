@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install rust
         uses: actions-rs/toolchain@v1
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install rust
         uses: actions-rs/toolchain@v1
@@ -66,14 +66,14 @@ jobs:
     continue-on-error: ${{ matrix.checks == 'advisories' }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: EmbarkStudios/cargo-deny-action@v2
       with:
         command: check ${{ matrix.checks }}
 
   create-release:
     name: deploy
-    needs: [style, test]
+    needs: [style, test, deny]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     strategy: 
@@ -81,7 +81,7 @@ jobs:
         target: [ arm-unknown-linux-gnueabihf ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           submodules: 'recursive'
 
@@ -107,13 +107,72 @@ jobs:
           cd dist
           zip -r ../allium-${{ matrix.target }}.zip .allium .tmp_update RetroArch Apps BIOS Roms Saves
           cd -
-          
+
       - name: Publish
-        uses: softprops/action-gh-release@v1
-        # TODO: if any of the build step fails, the release should be deleted.
+        uses: softprops/action-gh-release@v2
         with:
-            # UPDATEME: Replace "rust-ci" with your binary name but keep the star (*).
-            files: 'allium-${{ matrix.target }}.zip'
+          prerelease: true
+          files: 'allium-${{ matrix.target }}.zip'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
+  nightly:
+    name: deploy nightly
+    needs: [style, test, deny]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ arm-unknown-linux-gnueabihf ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Build target
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --bins --target ${{ matrix.target }}
+
+      - name: Package
+        shell: bash
+        run: |
+          make all
+          cd dist
+          zip -r ../allium-${{ matrix.target }}.zip .allium .tmp_update RetroArch Apps BIOS Roms Saves
+          cd -
+
+      - name: Delete old nightly release
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete nightly --yes --cleanup-tag
+
+      - name: Create nightly prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Nightly Build
+          prerelease: true
+          files: 'allium-${{ matrix.target }}.zip'
+          body: |
+            Automated nightly build from the latest commit on main branch.
+
+            **Warning**: This is an unstable development build and may contain bugs.
+
+            Commit: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -17,8 +17,8 @@ all: dist build package-build $(DIST_DIR)/RetroArch/retroarch $(DIST_DIR)/.alliu
 
 .PHONY: clean
 clean:
-	rm -r $(DIST_DIR)
-	rm -f $(RETROARCH)/retroarch
+	rm -r $(DIST_DIR) || true
+	rm -f $(RETROARCH)/retroarch || true
 
 simulator-env:
 	mkdir -p simulator

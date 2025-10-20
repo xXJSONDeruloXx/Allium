@@ -7,7 +7,7 @@ use evdev::{Device, EventStream, EventType};
 use log::info;
 
 use crate::constants::MAXIMUM_FRAME_TIME;
-use crate::platform::{Key, KeyEvent};
+use crate::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 
 impl From<u16> for Key {
     fn from(code: u16) -> Self {
@@ -38,7 +38,7 @@ impl From<u16> for Key {
 
 pub struct EvdevKeys {
     pub events: EventStream,
-    lid_switch_poller: LidSwitchPoller,
+    lid_switch_poller: Option<LidSwitchPoller>,
 }
 
 impl EvdevKeys {
@@ -47,13 +47,13 @@ impl EvdevKeys {
             events: Device::open("/dev/input/event0")
                 .unwrap()
                 .into_event_stream()?,
-            lid_switch_poller: LidSwitchPoller::new(),
+            lid_switch_poller: DefaultPlatform::has_lid().then(|| LidSwitchPoller::new()),
         })
     }
 
     pub async fn poll(&mut self) -> KeyEvent {
         loop {
-            if let Some(lid_event) = self.lid_switch_poller.poll() {
+            if let Some(lid_event) = self.lid_switch_poller.as_mut().and_then(|lid| lid.poll()) {
                 info!("Lid event detected: {:?}", lid_event);
                 return lid_event;
             }

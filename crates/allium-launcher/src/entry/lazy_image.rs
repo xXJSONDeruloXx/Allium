@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use common::constants::ALLIUM_GAMES_DIR;
+use common::constants::ALLIUM_SD_ROOT;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -30,7 +30,18 @@ impl LazyImage {
 
         const IMAGE_EXTENSIONS: [&str; 4] = ["png", "jpg", "jpeg", "gif"];
 
-        // Search for Imgs folder upwards, recursively
+        // Search for Imgs folder upwards, recursively. For the root directory specifically, we
+        // treat /Imgs/ as /Roms/Imgs/ for searching purposes.
+        // For example, if path is /path/to/game/file.ext,
+        // we look for:
+        // - /Roms/path/to/game/Imgs/file.png
+        // - /Roms/path/to/Imgs/file.png
+        // - /Roms/path/to/Imgs/game/file.png
+        // - /Roms/path/Imgs/file.png
+        // - /Roms/path/Imgs/to/game/file.png
+        // - /Roms/Imgs/file.png
+        // - /Roms/Imgs/path/to/game/file.png
+        // - /Imgs/path-to/game/file.png
         let mut parent = path.clone();
         let mut image = None;
         let file_name = path.file_name().unwrap();
@@ -38,24 +49,40 @@ impl LazyImage {
             let mut image_path = parent.join("Imgs");
             if image_path.is_dir() {
                 image_path.push(file_name);
+                log::debug!("Searching for image at {:?}", image_path);
                 for ext in &IMAGE_EXTENSIONS {
                     image_path.set_extension(ext);
                     if image_path.is_file() {
+                        log::debug!("Found image at {:?}", image_path);
                         image = Some(image_path);
                         break 'image;
                     }
                 }
                 image_path.pop();
                 image_path.extend(path.strip_prefix(&parent).unwrap());
+                log::debug!("Searching for image at {:?}", image_path);
                 for ext in &IMAGE_EXTENSIONS {
                     image_path.set_extension(ext);
                     if image_path.is_file() {
+                        log::debug!("Found image at {:?}", image_path);
                         image = Some(image_path);
                         break 'image;
                     }
                 }
             }
-            if parent.to_str() == ALLIUM_GAMES_DIR.to_str() {
+            if parent.to_str() == ALLIUM_SD_ROOT.to_str() {
+                let mut image_path = parent.join("Imgs");
+                parent.push("Roms");
+                image_path.extend(path.strip_prefix(&parent).unwrap());
+                log::debug!("Searching for image at {:?}", image_path);
+                for ext in &IMAGE_EXTENSIONS {
+                    image_path.set_extension(ext);
+                    if image_path.is_file() {
+                        log::debug!("Found image at {:?}", image_path);
+                        image = Some(image_path);
+                        break 'image;
+                    }
+                }
                 break;
             }
         }

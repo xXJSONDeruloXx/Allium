@@ -291,7 +291,7 @@ impl Stylesheet {
             file,
             r#"rgui_entry_normal_color = "0xFF{foreground:X}"
 rgui_entry_hover_color = "0xFF{highlight:X}"
-rgui_tab_color = "0xFF{highlight:X}"
+rgui_title_color = "0xFF{highlight:X}"
 rgui_bg_dark_color = "0xFF{background:X}"
 rgui_bg_light_color = "0xFF{background:X}"
 rgui_border_dark_color = "0xFF{background:X}"

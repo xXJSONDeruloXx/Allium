@@ -97,6 +97,10 @@ settings-about-kernel-version = カーネルバージョン
 settings-about-memory-used = 使用済みメモリ
 settings-about-unknown-value = 不明
 
+settings-needs-restart-for-effect =
+    変更を有効にするにはデバイスを
+    再起動する必要があります。
+
 # Menu
 ingame-menu-continue = 続ける
 ingame-menu-save = セーブ

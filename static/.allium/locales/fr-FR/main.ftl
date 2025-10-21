@@ -97,6 +97,11 @@ settings-about-kernel-version = Version du noyau
 settings-about-memory-used = Mémoire utilisée
 settings-about-unknown-value = Inconnu
 
+settings-needs-restart-for-effect =
+    Vous devez redémarrer l'appareil
+    pour que les modifications
+    prennent effet.
+
 # Menu
 ingame-menu-continue = Continue
 ingame-menu-save = Sauver

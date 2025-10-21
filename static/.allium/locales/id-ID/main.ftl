@@ -97,6 +97,10 @@ settings-about-kernel-version = Versi Kernel
 settings-about-memory-used = Memori terpakai
 settings-about-unknown-value = Tak diketahui
 
+settings-needs-restart-for-effect =
+    Anda perlu me-restart perangkat
+    agar perubahan berlaku.
+
 # Menu
 ingame-menu-continue = Lanjut main
 ingame-menu-save = Simpan

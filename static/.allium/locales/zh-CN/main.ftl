@@ -97,6 +97,10 @@ settings-about-kernel-version = 内核版本
 settings-about-memory-used = 已使用内存
 settings-about-unknown-value = 未知
 
+settings-needs-restart-for-effect =
+    您需要重新启动设备以使更改
+    生效。
+
 # Menu
 ingame-menu-continue = 继续
 ingame-menu-save = 保存

@@ -97,6 +97,11 @@ settings-about-kernel-version = Kernel-Version
 settings-about-memory-used = Arbeitsspeicher belegt
 settings-about-unknown-value = Unbekannt
 
+settings-needs-restart-for-effect =
+    Sie müssen das Gerät neu starten,
+    damit die Änderungen wirksam
+    werden.
+
 # Menu
 ingame-menu-continue = Fortsetzen
 ingame-menu-save = Speichern

@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,6 +20,7 @@ use tokio::sync::mpsc::Sender;
 use crate::view::settings::{ChildState, SettingsChild};
 
 pub struct Power {
+    res: Resources,
     rect: Rect,
     power_settings: PowerSettings,
     list: SettingsList,
@@ -124,7 +126,11 @@ impl Power {
             12,
         );
 
+        drop(locale);
+        drop(styles);
+
         Self {
+            res,
             rect,
             power_settings,
             list,
@@ -187,12 +193,26 @@ impl View for Power {
                         2 => {
                             self.power_settings.power_button_action =
                                 PowerButtonAction::from_repr(val.as_int().unwrap() as usize)
-                                    .unwrap_or_default()
+                                    .unwrap_or_default();
+                            let locale = self.res.get::<Locale>();
+                            commands
+                                .send(Command::Toast(
+                                    locale.t("settings-needs-restart-for-effect"),
+                                    Some(Duration::from_secs(5)),
+                                ))
+                                .await?;
                         }
                         3 => {
                             self.power_settings.lid_close_action =
                                 PowerButtonAction::from_repr(val.as_int().unwrap() as usize)
-                                    .unwrap_or_default()
+                                    .unwrap_or_default();
+                            let locale = self.res.get::<Locale>();
+                            commands
+                                .send(Command::Toast(
+                                    locale.t("settings-needs-restart-for-effect"),
+                                    Some(Duration::from_secs(5)),
+                                ))
+                                .await?;
                         }
                         _ => unreachable!("Invalid index"),
                     }

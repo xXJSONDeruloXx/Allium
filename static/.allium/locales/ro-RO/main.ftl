@@ -97,6 +97,11 @@ settings-about-kernel-version = Versiunea Kernel-ului
 settings-about-memory-used = Memorie Utilizată
 settings-about-unknown-value = Necunoscut
 
+settings-needs-restart-for-effect =
+    Trebuie să reporniți dispozitivul
+    pentru ca modificările să aibă
+    efect.
+
 # Menu
 ingame-menu-continue = Continuă
 ingame-menu-save = Salvează

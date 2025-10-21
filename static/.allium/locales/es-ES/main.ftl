@@ -97,6 +97,11 @@ settings-about-kernel-version = Versión del Kernel
 settings-about-storage-used = Espacio utilizado
 settings-about-unknown-value = Desconocido
 
+settings-needs-restart-for-effect =
+    Necesitas reiniciar el dispositivo
+    para que los cambios surtan
+    efecto.
+
 # Menu
 ingame-menu-continue = Continuar
 ingame-menu-save = Guardar

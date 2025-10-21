@@ -102,6 +102,7 @@ impl AlliumLauncher<DefaultPlatform> {
 
             if let Some(toast) = self.toast.as_mut() {
                 if toast.has_expired() {
+                    self.handle_command(Command::Redraw).await?;
                     self.toast = None;
                 } else {
                     drawn |= toast.draw(&mut self.display, &self.res.get::<Stylesheet>())?;
@@ -258,6 +259,7 @@ impl AlliumLauncher<DefaultPlatform> {
             Command::DismissToast => {
                 trace!("dismissing toast");
                 self.toast = None;
+                self.display.load(self.display.bounding_box().into())?;
                 self.view.set_should_draw();
             }
             Command::PopulateDb => {

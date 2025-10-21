@@ -71,6 +71,7 @@ for script in "$ROOT"/.allium/migrations/*; do
         touch "$script/.done"
     fi
 done
+show -c
 
 # run Allium
 RUST_LOG=none "$ROOT"/.allium/bin/alliumd >/dev/null 2>&1

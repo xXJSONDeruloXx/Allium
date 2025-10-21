@@ -18,7 +18,8 @@ all: dist build package-build $(DIST_DIR)/RetroArch/retroarch $(DIST_DIR)/.alliu
 .PHONY: clean
 clean:
 	rm -r $(DIST_DIR) || true
-	rm -f $(RETROARCH)/retroarch || true
+	# Needs sudo because RetroArch build runs in docker as root
+	sudo rm -f $(RETROARCH)/bin/retroarch_miyoo354 || true
 
 simulator-env:
 	mkdir -p simulator

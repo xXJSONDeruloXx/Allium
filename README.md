@@ -1,6 +1,6 @@
 # Allium
 
-Allium is a custom launcher for the Miyoo Mini and Miyoo Mini Plus handheld devices, similar to [OnionOS](https://github.com/OnionUI/Onion) and [MiniUI](https://github.com/shauninman/MiniUI).
+Allium is a custom launcher for the Miyoo Mini, Miyoo Mini Plus, and Miyoo Mini Flip handheld devices, similar to [OnionOS](https://github.com/OnionUI/Onion) and [MiniUI](https://github.com/shauninman/MiniUI).
 
 ## Project Goals
 
@@ -9,7 +9,7 @@ The goal of Allium is to replace MainUI (stock UI) with a faster and more user-f
 - Clean, user-friendly UI
 - RetroArch (with Netplay, achievements)
 - Box art
-- Support running on both Miyoo Mini and Miyoo Mini Plus without changes
+- Support running on both Miyoo Mini, Miyoo Mini Plus, and Miyoo Mini Flip without changes
 
 # Screenshots
 
@@ -24,7 +24,7 @@ The goal of Allium is to replace MainUI (stock UI) with a faster and more user-f
 
 ## Installation
 
-Allium supports both the Miyoo Mini and Miyoo Mini Plus on the same SD card.
+Allium supports both the Miyoo Mini, Miyoo Mini Plus,and Miyoo Mini Flip on the same SD card.
 
 ### First Install
 1. Format the SD card to [FAT32](https://github.com/anzz1/DotUI-X/wiki/fat32format).

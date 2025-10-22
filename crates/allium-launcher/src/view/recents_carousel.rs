@@ -149,6 +149,8 @@ impl RecentsCarousel {
         let database = res.get::<Database>();
         let games = database.select_last_played(RECENT_GAMES_LIMIT)?;
 
+        log::debug!("RecentsCarousel: Loaded {} recent games", games.len());
+
         Ok(games
             .into_iter()
             .map(|game| {

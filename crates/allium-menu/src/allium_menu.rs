@@ -114,6 +114,43 @@ impl AlliumMenu<DefaultPlatform> {
                 }
                 std::process::exit(0);
             }
+            #[allow(unused_mut)]
+            Command::Exec(mut cmd) => {
+                // Execute/replace the current process with the provided command.
+                // Mirrors the behaviour in allium-launcher so the ingame menu can
+                // hand off execution to a new game process.
+                log::info!("executing Command::Exec: {:?}", cmd);
+                // Save UI state and clear any saved display overlays so the
+                // launched process starts with a clean framebuffer.
+                self.view.save()?;
+                // If there are saved overlays on the display stack, pop them
+                // so they don't accidentally re-appear over the launched game.
+                while self.display.pop() {}
+                self.display.clear(common::display::color::Color::new(0, 0, 0))?;
+                self.display.flush()?;
+
+                #[cfg(feature = "miyoo")]
+                {
+                    use std::os::unix::process::CommandExt;
+                    log::debug!("exec() into target command");
+                    cmd.exec();
+                }
+                #[cfg(not(feature = "miyoo"))]
+                {
+                    #[cfg(unix)]
+                    {
+                        use std::os::unix::process::CommandExt;
+                        log::debug!("simulator fallback: running 'make simulator-menu'");
+                        let _ = std::process::Command::new("/bin/sh")
+                            .arg("-c")
+                            .arg("make simulator-menu")
+                            .exec();
+                    }
+
+                    #[cfg(not(unix))]
+                    std::process::exit(0);
+                }
+            }
             Command::Redraw => {
                 self.display.load(self.display.bounding_box().into())?;
                 self.view.set_should_draw();

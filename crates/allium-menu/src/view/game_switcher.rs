@@ -176,24 +176,37 @@ impl GameSwitcher {
 
         let current_game = self.res.get::<GameInfo>();
         if current_game.has_menu {
+            debug!("Auto-saving current game");
             RetroArchCommand::SaveStateSlot(0).send().await?;
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
         }
         drop(current_game);
 
+        debug!("Quitting current game");
         RetroArchCommand::Quit.send().await?;
         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
 
+        // Create and save the new game info
         let new_game_info = GameInfo::new(
-            game.name.clone(), game.path.clone(), game.core.clone(), None,
-            game.command.clone(), game.args.clone(), game.has_menu, game.needs_swap,
+            game.name.clone(),
+            game.path.clone(),
+            game.core.clone(),
+            None,
+            game.command.clone(),
+            game.args.clone(),
+            game.has_menu,
+            game.needs_swap,
         );
+        
+        debug!("Saving new game info: {:?}", new_game_info.name);
         new_game_info.save()?;
 
-        let mut cmd = new_game_info.command();
-        let _ = cmd.spawn();
+        // Use Command::Exec to replace the current process with the new game
+        // This is the same way the launcher launches games
+        let cmd = new_game_info.command();
+        debug!("Executing game command");
+        commands.send(Command::Exec(cmd)).await?;
         
-        commands.send(Command::Exit).await?;
         Ok(())
     }
 }

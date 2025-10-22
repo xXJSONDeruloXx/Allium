@@ -118,3 +118,9 @@ bump-version: lint
 
 deploy:
 	rsync -av dist/ /run/media/kurt/ALLIUM
+
+update:
+	rm -rf /run/media/kurt/ALLIUM/.tmp_update
+	rm -rf /run/media/kurt/ALLIUM/.allium
+	cp -r dist/.tmp_update/ /run/media/kurt/ALLIUM/
+	cp -r dist/.allium/ /run/media/kurt/ALLIUM/

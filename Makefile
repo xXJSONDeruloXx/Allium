@@ -82,6 +82,10 @@ deploy: package-build
 	rsync -av --delete $(DIST_DIR)/.tmp_update/ $(SD_CARD_PATH)/.tmp_update/
 	@echo "Copying .allium binaries..."
 	rsync -av $(DIST_DIR)/.allium/bin/ $(SD_CARD_PATH)/.allium/bin/
+	@echo "Copying Apps..."
+	rsync -av --delete $(DIST_DIR)/Apps/ $(SD_CARD_PATH)/Apps/
+	@echo "Copying RetroArch..."
+	rsync -av $(DIST_DIR)/RetroArch/ $(SD_CARD_PATH)/RetroArch/
 	@echo ""
 	@echo "✓ Deployment complete!"
 	@echo "  Syncing and ejecting SD card..."

@@ -95,68 +95,142 @@ impl GameSwitcher {
         })
     }
 
-    fn draw_game_card(
+    fn draw_screenshot_area(
         &self,
         display: &mut <DefaultPlatform as Platform>::Display,
         styles: &Stylesheet,
-        game: &GameHistoryEntry,
-        x: i32,
-        y: i32,
-        width: u32,
-        height: u32,
-        is_selected: bool,
+        area_rect: Rect,
     ) -> Result<()> {
-        let card_rect = Rectangle::new(
-            Point::new(x, y).into(),
-            Size::new(width, height),
+        // TODO: Load actual screenshot if available
+        // For now, draw a placeholder rectangle
+        let placeholder_rect = Rectangle::new(
+            Point::new(area_rect.x, area_rect.y).into(),
+            Size::new(area_rect.w, area_rect.h),
         );
 
-        // Draw card background
-        let bg_color = if is_selected {
-            styles.highlight_color
-        } else {
-            styles.disabled_color
-        };
-
         RoundedRectangle::with_equal_corners(
-            card_rect,
+            placeholder_rect,
             Size::new_equal(8),
         )
-        .into_styled(PrimitiveStyle::with_fill(bg_color))
+        .into_styled(PrimitiveStyle::with_fill(styles.disabled_color))
         .draw(display)?;
 
-        // TODO: Draw screenshot if available
-        // For now, just draw a placeholder rectangle
-        let screenshot_rect = Rectangle::new(
-            Point::new(x + 8, y + 8).into(),
-            Size::new(width - 16, height - 50),
-        );
-
-        RoundedRectangle::with_equal_corners(
-            screenshot_rect,
-            Size::new_equal(4),
-        )
-        .into_styled(PrimitiveStyle::with_fill(styles.background_color))
-        .draw(display)?;
-
-        // Draw game name
+        // Draw "No Screenshot" text
         let text_style = FontTextStyleBuilder::new(styles.ui_font.font())
             .font_fallback(styles.cjk_font.font())
             .font_size(styles.ui_font.size)
-            .background_color(bg_color)
-            .text_color(if is_selected {
-                styles.background_color
-            } else {
-                styles.foreground_color
-            })
+            .background_color(styles.disabled_color)
+            .text_color(styles.foreground_color)
             .build();
 
-        let name_y = y + (height - 30) as i32;
         Text::with_alignment(
-            &game.name,
-            Point::new(x + (width / 2) as i32, name_y).into(),
+            "No Screenshot",
+            Point::new(
+                area_rect.x + (area_rect.w / 2) as i32,
+                area_rect.y + (area_rect.h / 2) as i32,
+            )
+            .into(),
             text_style,
             Alignment::Center.into(),
+        )
+        .draw(display)?;
+
+        Ok(())
+    }
+
+    fn draw_game_name_bar(
+        &self,
+        display: &mut <DefaultPlatform as Platform>::Display,
+        styles: &Stylesheet,
+        bar_rect: Rect,
+        game: &GameHistoryEntry,
+    ) -> Result<()> {
+        // Draw semi-transparent background bar
+        let bar_bg = Rectangle::new(
+            Point::new(bar_rect.x, bar_rect.y).into(),
+            Size::new(bar_rect.w, bar_rect.h),
+        );
+
+        RoundedRectangle::with_equal_corners(
+            bar_bg,
+            Size::new_equal(4),
+        )
+        .into_styled(PrimitiveStyle::with_fill(styles.highlight_color))
+        .draw(display)?;
+
+        // Draw left arrow if not at start
+        if self.selected > 0 {
+            let arrow_style = FontTextStyleBuilder::new(styles.ui_font.font())
+                .font_fallback(styles.cjk_font.font())
+                .font_size(styles.ui_font.size)
+                .background_color(styles.highlight_color)
+                .text_color(styles.background_color)
+                .build();
+
+            Text::with_alignment(
+                "<",
+                Point::new(bar_rect.x + 20, bar_rect.y + (bar_rect.h / 2) as i32).into(),
+                arrow_style,
+                Alignment::Left.into(),
+            )
+            .draw(display)?;
+        }
+
+        // Draw game name (centered)
+        let name_style = FontTextStyleBuilder::new(styles.ui_font.font())
+            .font_fallback(styles.cjk_font.font())
+            .font_size(styles.ui_font.size)
+            .background_color(styles.highlight_color)
+            .text_color(styles.background_color)
+            .build();
+
+        Text::with_alignment(
+            &game.name,
+            Point::new(
+                bar_rect.x + (bar_rect.w / 2) as i32,
+                bar_rect.y + (bar_rect.h / 2) as i32,
+            )
+            .into(),
+            name_style,
+            Alignment::Center.into(),
+        )
+        .draw(display)?;
+
+        // Draw right arrow if not at end
+        if self.selected < self.games.len() - 1 {
+            let arrow_style = FontTextStyleBuilder::new(styles.ui_font.font())
+                .font_fallback(styles.cjk_font.font())
+                .font_size(styles.ui_font.size)
+                .background_color(styles.highlight_color)
+                .text_color(styles.background_color)
+                .build();
+
+            Text::with_alignment(
+                ">",
+                Point::new(bar_rect.x + bar_rect.w as i32 - 20, bar_rect.y + (bar_rect.h / 2) as i32).into(),
+                arrow_style,
+                Alignment::Right.into(),
+            )
+            .draw(display)?;
+        }
+
+        // Draw game counter (e.g., "3/10") on the right
+        let counter_text = format!("{}/{}", self.selected + 1, self.games.len());
+        let counter_style = FontTextStyleBuilder::new(styles.ui_font.font())
+            .font_size(styles.ui_font.size - 4) // Slightly smaller
+            .background_color(styles.highlight_color)
+            .text_color(styles.background_color)
+            .build();
+
+        Text::with_alignment(
+            &counter_text,
+            Point::new(
+                bar_rect.x + bar_rect.w as i32 - 50,
+                bar_rect.y + (bar_rect.h / 2) as i32,
+            )
+            .into(),
+            counter_style,
+            Alignment::Right.into(),
         )
         .draw(display)?;
 
@@ -209,68 +283,35 @@ impl View for GameSwitcher {
                 )
                 .draw(display)?;
             } else {
-                // Draw carousel of game cards
-                let card_width = 200;
-                let card_height = 180;
-                let card_spacing = 20;
-                let center_x = self.rect.x + (self.rect.w / 2) as i32;
-                let center_y = self.rect.y + (self.rect.h / 2) as i32 - 30;
-
-                // Draw up to 3 cards: prev, current, next
-                let num_games = self.games.len();
+                // Single-screenshot layout with name bar at bottom
                 
-                // Previous card (if exists)
-                if num_games > 1 {
-                    let prev_idx = if self.selected == 0 {
-                        num_games - 1
-                    } else {
-                        self.selected - 1
-                    };
-                    let prev_x = center_x - card_width as i32 - card_spacing;
-                    self.draw_game_card(
-                        display,
-                        styles,
-                        &self.games[prev_idx],
-                        prev_x,
-                        center_y,
-                        card_width,
-                        card_height,
-                        false,
-                    )?;
-                }
+                // Calculate layout areas
+                let padding = 12i32;
+                let button_hints_height = ButtonIcon::diameter(styles) as i32 + 16;
+                let name_bar_height = 60u32;
+                
+                // Screenshot area (fullscreen, centered)
+                let screenshot_area = Rect {
+                    x: self.rect.x + padding * 2,
+                    y: self.rect.y + padding * 2,
+                    w: (self.rect.w as i32 - padding * 4) as u32,
+                    h: (self.rect.h as i32 - padding * 4 - button_hints_height - name_bar_height as i32 - padding) as u32,
+                };
 
-                // Current card (selected)
-                let current_x = center_x - (card_width / 2) as i32;
-                self.draw_game_card(
-                    display,
-                    styles,
-                    &self.games[self.selected],
-                    current_x,
-                    center_y - 10, // Slightly higher to emphasize
-                    card_width,
-                    card_height + 20,
-                    true,
-                )?;
+                // Name bar area (at bottom, above button hints)
+                let name_bar = Rect {
+                    x: self.rect.x + padding * 2,
+                    y: screenshot_area.y + screenshot_area.h as i32 + padding,
+                    w: (self.rect.w as i32 - padding * 4) as u32,
+                    h: name_bar_height,
+                };
 
-                // Next card (if exists)
-                if num_games > 1 {
-                    let next_idx = if self.selected == num_games - 1 {
-                        0
-                    } else {
-                        self.selected + 1
-                    };
-                    let next_x = center_x + card_width as i32 / 2 + card_spacing;
-                    self.draw_game_card(
-                        display,
-                        styles,
-                        &self.games[next_idx],
-                        next_x,
-                        center_y,
-                        card_width,
-                        card_height,
-                        false,
-                    )?;
-                }
+                // Draw fullscreen screenshot (or placeholder)
+                self.draw_screenshot_area(display, styles, screenshot_area)?;
+
+                // Draw game name bar with arrows and counter
+                let current_game = &self.games[self.selected];
+                self.draw_game_name_bar(display, styles, name_bar, current_game)?;
             }
 
             self.dirty = false;

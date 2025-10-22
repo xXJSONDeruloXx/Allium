@@ -103,6 +103,7 @@ settings-needs-restart-for-effect =
 
 # Menu
 ingame-menu-continue = Continue
+ingame-menu-switch-game = Switch Game
 ingame-menu-save = Save
 ingame-menu-load = Load
 ingame-menu-reset = Reset

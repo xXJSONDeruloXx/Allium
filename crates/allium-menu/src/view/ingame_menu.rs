@@ -237,6 +237,13 @@ where
             MenuEntry::Continue => {
                 commands.send(Command::Exit).await?;
             }
+            MenuEntry::SwitchGame => {
+                // ← NEW: Game switcher functionality
+                // TODO: Create GameSwitcher view (similar to TextReader for Guide)
+                // For now, just placeholder
+                warn!("Game switcher not yet implemented");
+                // Future: self.child = Some(GameSwitcher::new(self.rect, self.res.clone()));
+            }
             MenuEntry::Save => {
                 let slot = self.retroarch_info.as_ref().unwrap().state_slot.unwrap();
                 RetroArchCommand::SaveStateSlot(slot).send().await?;
@@ -579,6 +586,7 @@ where
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MenuEntry {
     Continue,
+    SwitchGame,  // ← NEW: Game switcher entry
     Save,
     Load,
     Reset,
@@ -591,6 +599,7 @@ impl MenuEntry {
     fn as_str(&self, locale: &Locale) -> String {
         match self {
             MenuEntry::Continue => locale.t("ingame-menu-continue"),
+            MenuEntry::SwitchGame => locale.t("ingame-menu-switch-game"),  // ← NEW
             MenuEntry::Save => locale.t("ingame-menu-save"),
             MenuEntry::Load => locale.t("ingame-menu-load"),
             MenuEntry::Reset => locale.t("ingame-menu-reset"),
@@ -607,6 +616,7 @@ impl MenuEntry {
                 ..
             }) => vec![
                 MenuEntry::Continue,
+                MenuEntry::SwitchGame,  // ← NEW: Add after Continue
                 MenuEntry::Save,
                 MenuEntry::Load,
                 MenuEntry::Guide,
@@ -616,6 +626,7 @@ impl MenuEntry {
             ],
             Some(_) => vec![
                 MenuEntry::Continue,
+                MenuEntry::SwitchGame,  // ← NEW: Add here too
                 MenuEntry::Reset,
                 MenuEntry::Guide,
                 MenuEntry::Settings,

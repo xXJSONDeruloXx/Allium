@@ -45,6 +45,12 @@ third-party/my283:
 build: third-party/my283
 	cross build --release --target=$(CROSS_TARGET_TRIPLE) --features=miyoo --bin=alliumd --bin=allium-launcher --bin=allium-menu --bin=activity-tracker --bin=screenshot --bin=say --bin=show --bin=show-hotkeys --bin=myctl
 
+.PHONY: game-switcher
+game-switcher: third-party/my283 dist
+	cross build --release --target=$(CROSS_TARGET_TRIPLE) --features=miyoo --bin=game-switcher
+	cp $(BUILD_DIR)/game-switcher $(DIST_DIR)/game-switcher
+	@echo "Game Switcher POC built: $(DIST_DIR)/game-switcher"
+
 .PHONY: debug
 debug: third-party/my283
 	cross build --target=$(CROSS_TARGET_TRIPLE) --features=miyoo --bin=alliumd --bin=allium-launcher --bin=allium-menu --bin=activity-tracker --bin=screenshot --bin=say --bin=show --bin=show-hotkeys --bin=myctl

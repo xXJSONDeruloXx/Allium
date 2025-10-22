@@ -393,7 +393,15 @@ impl GameSwitcher {
         }
         drop(current_game);
 
-        // Create new GameInfo for the selected game BEFORE quitting
+        // Quit RetroArch first
+        debug!("Sending quit command to RetroArch");
+        RetroArchCommand::Quit.send().await?;
+        
+        // Give RetroArch time to quit
+        debug!("Waiting for RetroArch to quit...");
+        tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+
+        // Create new GameInfo for the selected game
         let new_game_info = GameInfo::new(
             game.name.clone(),
             game.path.clone(),
@@ -406,16 +414,23 @@ impl GameSwitcher {
         );
 
         debug!("Created new GameInfo: {:?}", new_game_info);
-        debug!("Saving new game info to disk (THIS WILL BE LOADED BY ALLIUMD)");
+        debug!("Saving new game info to disk");
         new_game_info.save()?;
 
-        // NOW quit RetroArch - alliumd will detect the quit and launch the new game
-        debug!("Sending quit command to RetroArch");
-        RetroArchCommand::Quit.send().await?;
+        // Launch the game directly by spawning the process
+        debug!("Spawning new game process directly");
+        let mut cmd = new_game_info.command();
+        match cmd.spawn() {
+            Ok(_) => {
+                debug!("Game process spawned successfully");
+            }
+            Err(e) => {
+                warn!("Failed to spawn game process: {}", e);
+            }
+        }
         
-        // Exit the menu - when alliumd sees RetroArch quit, it will spawn_main()
-        // which will load our saved GameInfo and launch the new game
-        debug!("Exiting menu - alliumd will launch the new game");
+        // Now exit the menu - the game should be running
+        debug!("Exiting menu");
         commands.send(Command::Exit).await?;
         
         debug!("=== GAME SWITCH END ===");

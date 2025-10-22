@@ -84,8 +84,12 @@ deploy: package-build
 	rsync -av $(DIST_DIR)/.allium/bin/ $(SD_CARD_PATH)/.allium/bin/
 	@echo ""
 	@echo "✓ Deployment complete!"
-	@echo "  Eject the SD card and reboot your Miyoo Mini to apply updates."
+	@echo "  Syncing and ejecting SD card..."
 	sync
+	udisksctl unmount -b /dev/disk/by-label/ALLIUM
+	udisksctl power-off -b /dev/disk/by-label/ALLIUM
+	@echo "✓ SD card ejected safely!"
+	@echo "  You can now remove the SD card and insert it into your Miyoo Mini."
 
 MIGRATIONS_DIR := $(DIST_DIR)/.allium/migrations
 .PHONY: migrations

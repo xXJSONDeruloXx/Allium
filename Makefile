@@ -115,3 +115,6 @@ bump-version: lint
 	git add static/.allium/version.txt
 	git commit -m "chore: bump version to v$(version)"
 	git tag "v$(version)" -a
+
+deploy:
+	rsync -av dist/ /run/media/kurt/ALLIUM

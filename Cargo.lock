@@ -55,6 +55,7 @@ version = "0.28.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base32",
  "chrono",
  "common",
  "embedded-graphics",
@@ -70,6 +71,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serial_test",
+ "sha2",
  "simple_logger",
  "strum",
  "sysinfo",

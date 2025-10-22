@@ -21,66 +21,36 @@ use crate::entry::game::Game;
 use crate::entry::lazy_image::LazyImage;
 use crate::entry::{Entry, Sort};
 use crate::view::entry_list::{EntryList, EntryListState};
+use crate::view::recents_carousel::{RecentsCarousel, RecentsCarouselState};
 
-pub type RecentsState = EntryListState<RecentsSort>;
+pub type RecentsState = RecentsCarouselState;
 
 #[derive(Debug)]
 pub struct Recents {
     res: Resources,
     rect: Rect,
-    list: EntryList<RecentsSort>,
-    button_hints: Row<ButtonHint<String>>,
+    carousel: RecentsCarousel,
     keyboard: Option<Keyboard>,
 }
 
 impl Recents {
-    pub fn new(rect: Rect, res: Resources, list: EntryList<RecentsSort>) -> Result<Self> {
-        let Rect { x, y, w: _w, h } = rect;
-
-        let styles = res.get::<Stylesheet>();
-
-        let button_hints = Row::new(
-            Point::new(
-                x + 12,
-                y + h as i32 - ButtonIcon::diameter(&styles) as i32 - 8,
-            ),
-            {
-                let locale = res.get::<Locale>();
-                vec![ButtonHint::new(
-                    res.clone(),
-                    Point::zero(),
-                    Key::X,
-                    locale.t("sort-search"),
-                    Alignment::Left,
-                )]
-            },
-            Alignment::Left,
-            12,
-        );
-
-        drop(styles);
-
+    pub fn new(rect: Rect, res: Resources, carousel: RecentsCarousel) -> Result<Self> {
         Ok(Self {
             res,
             rect,
-            list,
-            button_hints,
+            carousel,
             keyboard: None,
         })
     }
 
     pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsState>) -> Result<Self> {
-        let list = if let Some(state) = state {
-            EntryList::load(rect, res.clone(), state)?
-        } else {
-            EntryList::new(rect, res.clone(), RecentsSort::LastPlayed)?
-        };
-
-        Self::new(rect, res, list)
+        let state = state.unwrap_or_default();
+        let carousel = RecentsCarousel::new(rect, res.clone(), state)?;
+        Self::new(rect, res, carousel)
     }
 
     pub fn save(&self) -> RecentsState {
-        self.list.save()
+        self.carousel.save()
     }
 
     pub fn start_search(&mut self) {
@@ -102,8 +72,8 @@ impl Recents {
         Ok(())
     }
 
-    pub fn search(&mut self, query: String) -> Result<()> {
-        self.list.sort(RecentsSort::Search(query))?;
+    pub fn search(&mut self, _query: String) -> Result<()> {
+        // TODO: Implement search for carousel
         Ok(())
     }
 }
@@ -117,11 +87,7 @@ impl View for Recents {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        if self.list.should_draw() {
-            drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
-            self.button_hints.set_should_draw();
-        }
-        drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
+        drawn |= self.carousel.should_draw() && self.carousel.draw(display, styles)?;
 
         if let Some(keyboard) = self.keyboard.as_mut() {
             if drawn {
@@ -134,14 +100,12 @@ impl View for Recents {
     }
 
     fn should_draw(&self) -> bool {
-        self.list.should_draw()
-            || self.button_hints.should_draw()
+        self.carousel.should_draw()
             || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
     }
 
     fn set_should_draw(&mut self) {
-        self.list.set_should_draw();
-        self.button_hints.set_should_draw();
+        self.carousel.set_should_draw();
         if let Some(keyboard) = self.keyboard.as_mut() {
             keyboard.set_should_draw();
         }
@@ -184,21 +148,21 @@ impl View for Recents {
                     self.start_search();
                 } else {
                     self.keyboard = None;
-                    self.list.sort(RecentsSort::LastPlayed)?;
+                    // TODO: Reset search state in carousel
                     commands.send(Command::Redraw).await?;
                 }
                 return Ok(true);
             }
-            _ => self.list.handle_key_event(event, commands, bubble).await,
+            _ => self.carousel.handle_key_event(event, commands, bubble).await,
         }
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        vec![&self.list]
+        vec![&self.carousel]
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
-        vec![&mut self.list]
+        vec![&mut self.carousel]
     }
 
     fn bounding_box(&mut self, _styles: &Stylesheet) -> Rect {

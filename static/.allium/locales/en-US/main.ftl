@@ -13,6 +13,8 @@ sort-random = Sort: Random
 sort-search = Sort: Search
 sort-favorites = Sort: Favorites
 
+no-recent-games = No recent games
+
 populating-database = Populating database...
     This may take several minutes.
     Go grab a coffee!

@@ -5,6 +5,7 @@ use std::{collections::HashMap, path::Path};
 use anyhow::{Context, Result, anyhow, bail};
 use common::command::Command;
 use common::database::Database;
+use common::game_history::{GameHistory, GameHistoryEntry};
 use common::game_info::GameInfo;
 use serde::Deserialize;
 
@@ -240,6 +241,23 @@ impl ConsoleMapper {
         };
         debug!("Saving game info: {:?}", game_info);
         game_info.save()?;
+        
+        // Record game launch in history
+        let history = GameHistory::new(database.clone());
+        let history_entry = GameHistoryEntry::new(
+            game_info.name.clone(),
+            game_info.path.clone(),
+            game_info.core.clone(),
+            game_info.command.clone(),
+            game_info.args.clone(),
+            None, // Screenshot will be captured later when switching games
+            game_info.has_menu,
+            game_info.needs_swap,
+        );
+        if let Err(e) = history.record_launch(history_entry) {
+            error!("Failed to record game in history: {}", e);
+        }
+        
         Ok(Some(Command::Exec(game_info.command())))
     }
 

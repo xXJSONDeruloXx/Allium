@@ -30,7 +30,30 @@ use sha2::{Digest, Sha256};
 use tokio::sync::mpsc::Sender;
 
 use crate::retroarch_info::RetroArchInfo;
+use crate::view::game_switcher::GameSwitcher;
 use crate::view::text_reader::TextReader;
+
+/// Child views that can be displayed in the ingame menu
+enum ChildView {
+    TextReader(TextReader),
+    GameSwitcher(GameSwitcher),
+}
+
+impl ChildView {
+    fn as_view(&self) -> &dyn View {
+        match self {
+            ChildView::TextReader(v) => v,
+            ChildView::GameSwitcher(v) => v,
+        }
+    }
+
+    fn as_view_mut(&mut self) -> &mut dyn View {
+        match self {
+            ChildView::TextReader(v) => v,
+            ChildView::GameSwitcher(v) => v,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct IngameMenuState {
@@ -46,7 +69,7 @@ where
     name: Label<String>,
     row: Row<Box<dyn View>>,
     menu: SettingsList,
-    child: Option<TextReader>,
+    child: Option<ChildView>,
     button_hints: Row<ButtonHint<String>>,
     entries: Vec<MenuEntry>,
     retroarch_info: Option<RetroArchInfo>,
@@ -175,7 +198,7 @@ where
             && let Some(guide) = game_info.guide.as_ref()
         {
             menu.select(MenuEntry::Guide as usize);
-            child = Some(TextReader::new(rect, res.clone(), guide.clone()));
+            child = Some(ChildView::TextReader(TextReader::new(rect, res.clone(), guide.clone())));
         }
 
         let path = game_info.path.clone();
@@ -225,7 +248,10 @@ where
             is_text_reader_open: self.child.is_some(),
         };
         if let Some(child) = self.child.as_ref() {
-            child.save_cursor();
+            // Only save cursor for TextReader
+            if let ChildView::TextReader(reader) = child {
+                reader.save_cursor();
+            }
         }
         serde_json::to_writer(file, &state)?;
         Ok(())
@@ -238,11 +264,15 @@ where
                 commands.send(Command::Exit).await?;
             }
             MenuEntry::SwitchGame => {
-                // ← NEW: Game switcher functionality
-                // TODO: Create GameSwitcher view (similar to TextReader for Guide)
-                // For now, just placeholder
-                warn!("Game switcher not yet implemented");
-                // Future: self.child = Some(GameSwitcher::new(self.rect, self.res.clone()));
+                // Create GameSwitcher view
+                match GameSwitcher::new(self.rect, self.res.clone()) {
+                    Ok(switcher) => {
+                        self.child = Some(ChildView::GameSwitcher(switcher));
+                    }
+                    Err(e) => {
+                        warn!("Failed to create game switcher: {}", e);
+                    }
+                }
             }
             MenuEntry::Save => {
                 let slot = self.retroarch_info.as_ref().unwrap().state_slot.unwrap();
@@ -271,7 +301,7 @@ where
             }
             MenuEntry::Guide => {
                 if let Some(guide) = self.res.get::<GameInfo>().guide.as_ref() {
-                    self.child = Some(TextReader::new(self.rect, self.res.clone(), guide.clone()));
+                    self.child = Some(ChildView::TextReader(TextReader::new(self.rect, self.res.clone(), guide.clone())));
                 }
             }
             MenuEntry::Settings => {
@@ -378,7 +408,7 @@ where
         }
 
         if let Some(child) = self.child.as_mut() {
-            drawn |= child.should_draw() && child.draw(display, styles)?;
+            drawn |= child.as_view().should_draw() && child.as_view_mut().draw(display, styles)?;
         } else {
             drawn |= self.name.should_draw() && self.name.draw(display, styles)?;
             drawn |= self.row.should_draw() && self.row.draw(display, styles)?;
@@ -392,7 +422,7 @@ where
 
     fn should_draw(&self) -> bool {
         if let Some(child) = self.child.as_ref() {
-            self.dirty || child.should_draw()
+            self.dirty || child.as_view().should_draw()
         } else {
             self.dirty
                 || self.name.should_draw()
@@ -405,7 +435,7 @@ where
     fn set_should_draw(&mut self) {
         self.dirty = true;
         if let Some(child) = self.child.as_mut() {
-            child.set_should_draw();
+            child.as_view_mut().set_should_draw();
         } else {
             self.name.set_should_draw();
             self.row.set_should_draw();
@@ -422,6 +452,7 @@ where
     ) -> Result<bool> {
         if let Some(child) = self.child.as_mut()
             && child
+                .as_view_mut()
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
         {

@@ -151,7 +151,24 @@ END;"),
         M::up("
 ALTER TABLE games ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
 "),
+        M::up("
+CREATE TABLE IF NOT EXISTS game_history (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL UNIQUE,
+    core TEXT NOT NULL,
+    command TEXT NOT NULL,
+    args TEXT NOT NULL,
+    screenshot TEXT,
+    has_menu INTEGER NOT NULL,
+    needs_swap INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL
+);"),
                 ])
+    }
+
+    pub fn conn(&self) -> &Connection {
+        self.conn.as_ref().unwrap()
     }
 
     pub fn reset_game(&self, path: &Path) -> Result<()> {

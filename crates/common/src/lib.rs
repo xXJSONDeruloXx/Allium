@@ -6,6 +6,7 @@ pub mod command;
 pub mod constants;
 pub mod database;
 pub mod display;
+pub mod game_history;
 pub mod game_info;
 pub mod geom;
 pub mod locale;

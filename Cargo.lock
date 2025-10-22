@@ -10,7 +10,7 @@ checksum = "366ffbaa4442f4684d91e2cd7c5ea7c4ed8add41959a31447066e279e432b618"
 
 [[package]]
 name = "activity-tracker"
-version = "0.28.0"
+version = "0.28.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -51,7 +51,7 @@ checksum = "250f629c0161ad8107cf89319e990051fae62832fd343083bea452d93e2205fd"
 
 [[package]]
 name = "allium-launcher"
-version = "0.28.0"
+version = "0.28.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -80,7 +80,7 @@ dependencies = [
 
 [[package]]
 name = "allium-menu"
-version = "0.28.0"
+version = "0.28.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -100,7 +100,7 @@ dependencies = [
 
 [[package]]
 name = "alliumd"
-version = "0.28.0"
+version = "0.28.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -490,7 +490,7 @@ checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
 
 [[package]]
 name = "common"
-version = "0.28.0"
+version = "0.28.1"
 dependencies = [
  "anyhow",
  "async-trait",

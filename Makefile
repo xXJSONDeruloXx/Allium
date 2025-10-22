@@ -68,6 +68,25 @@ package-build:
 	rsync -a $(BUILD_DIR)/activity-tracker "$(DIST_DIR)/Apps/Activity Tracker.pak/"
 	rsync -a $(BUILD_DIR)/myctl $(DIST_DIR)/.tmp_update/bin/
 
+# Deploy to SD card - set SD_CARD_PATH environment variable or pass as argument
+SD_CARD_PATH ?= /run/media/$(USER)/ALLIUM
+.PHONY: deploy
+deploy: package-build
+	@echo "Deploying to SD card at $(SD_CARD_PATH)..."
+	@if [ ! -d "$(SD_CARD_PATH)" ]; then \
+		echo "Error: SD card not found at $(SD_CARD_PATH)"; \
+		echo "Set SD_CARD_PATH environment variable or pass it as: make deploy SD_CARD_PATH=/path/to/sd"; \
+		exit 1; \
+	fi
+	@echo "Copying .tmp_update folder..."
+	rsync -av --delete $(DIST_DIR)/.tmp_update/ $(SD_CARD_PATH)/.tmp_update/
+	@echo "Copying .allium binaries..."
+	rsync -av $(DIST_DIR)/.allium/bin/ $(SD_CARD_PATH)/.allium/bin/
+	@echo ""
+	@echo "✓ Deployment complete!"
+	@echo "  Eject the SD card and reboot your Miyoo Mini to apply updates."
+	sync
+
 MIGRATIONS_DIR := $(DIST_DIR)/.allium/migrations
 .PHONY: migrations
 migrations: $(MIGRATIONS_DIR)/0000-retroarch-config/retroarch-config.zip $(MIGRATIONS_DIR)/0001-retroarch-core-overrides/retroarch-core-overrides.zip

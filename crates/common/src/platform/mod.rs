@@ -93,6 +93,5 @@ pub enum Key {
     VolDown,
     VolUp,
     LidClose,
-    LidOpen,
     Unknown,
 }

@@ -440,7 +440,7 @@ impl AlliumD<DefaultPlatform> {
         loop {
             tokio::select! {
                 key_event = self.platform.poll()=> {
-                    if matches!(key_event, KeyEvent::Released(Key::Power)) || matches!(key_event, KeyEvent::Pressed(Key::LidOpen)) {
+                    if matches!(key_event, KeyEvent::Released(Key::Power)) || matches!(key_event, KeyEvent::Released(Key::LidClose)) {
                         break;
                     }
                 }

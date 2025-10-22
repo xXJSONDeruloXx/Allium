@@ -99,7 +99,7 @@ impl LidSwitchPoller {
         if is_lid_open != self.is_lid_open {
             self.is_lid_open = is_lid_open;
             if is_lid_open {
-                Some(KeyEvent::Pressed(Key::LidOpen))
+                Some(KeyEvent::Released(Key::LidClose))
             } else {
                 Some(KeyEvent::Pressed(Key::LidClose))
             }

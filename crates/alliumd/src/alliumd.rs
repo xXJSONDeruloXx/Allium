@@ -241,11 +241,12 @@ impl AlliumD<DefaultPlatform> {
     }
 
     async fn handle_key_event(&mut self, key_event: KeyEvent) -> Result<()> {
-        trace!(
-            "menu: {:?}, main: {:?}, ingame: {}",
+        info!(
+            "menu: {:?}, main: {:?}, ingame: {}, key_event: {:?}",
             self.menu.as_ref().map(tokio::process::Child::id),
             self.main.id(),
-            self.is_ingame()
+            self.is_ingame(),
+            key_event
         );
 
         // Handle menu key
@@ -365,7 +366,12 @@ impl AlliumD<DefaultPlatform> {
                     }
                 }
                 KeyEvent::Released(Key::Menu) => {
+                    info!("menu key released");
                     if self.is_menu_pressed_alone {
+                        info!("menu key pressed alone, toggling menu");
+                        info!("is_ingame: {}", self.is_ingame());
+                        info!("keys state: {:?}", self.keys);
+                        info!("game_info: {:?}", GameInfo::load()?);
                         if self.is_ingame()
                             && self
                                 .keys
@@ -373,9 +379,12 @@ impl AlliumD<DefaultPlatform> {
                                 .all(|(k, pressed)| k == Key::Menu || !pressed)
                             && let Some(game_info) = GameInfo::load()?
                         {
+                            info!("toggling menu");
                             if let Some(menu) = &mut self.menu {
+                                info!("terminating menu");
                                 terminate(menu).await?;
                             } else if game_info.has_menu {
+                                info!("pausing game and launching menu");
                                 self.menu = Some(Command::new(ALLIUM_MENU.as_path()).spawn()?);
                             }
                         }
@@ -441,6 +450,8 @@ impl AlliumD<DefaultPlatform> {
             tokio::select! {
                 key_event = self.platform.poll()=> {
                     if matches!(key_event, KeyEvent::Released(Key::Power)) || matches!(key_event, KeyEvent::Released(Key::LidClose)) {
+                        self.keys[Key::Power] = false;
+                        self.keys[Key::LidClose] = false;
                         break;
                     }
                 }

@@ -243,6 +243,7 @@ impl ConsoleMapper {
         game_info.save()?;
         
         // Record game launch in history
+        debug!("Recording game in history: {}", game_info.name);
         let history = GameHistory::new(database.clone());
         let history_entry = GameHistoryEntry::new(
             game_info.name.clone(),
@@ -254,8 +255,9 @@ impl ConsoleMapper {
             game_info.has_menu,
             game_info.needs_swap,
         );
-        if let Err(e) = history.record_launch(history_entry) {
-            error!("Failed to record game in history: {}", e);
+        match history.record_launch(history_entry) {
+            Ok(_) => debug!("Game successfully recorded in history"),
+            Err(e) => error!("Failed to record game in history: {}", e),
         }
         
         Ok(Some(Command::Exec(game_info.command())))

@@ -32,8 +32,11 @@ pub struct GameSwitcher {
 
 impl GameSwitcher {
     pub fn new(rect: Rect, res: Resources) -> Result<Self> {
+        debug!("GameSwitcher::new - Initializing game switcher");
+        
         let current_game = res.get::<GameInfo>();
         let current_game_path = Some(current_game.path.clone());
+        debug!("Current game: {} at {:?}", current_game.name, current_game.path);
         drop(current_game);
 
         let db = res.get::<Database>().clone();
@@ -41,6 +44,11 @@ impl GameSwitcher {
         
         // Get recent games excluding the current one
         let games = history.get_recent_games(current_game_path.as_ref(), 9)?;
+        
+        debug!("Found {} games in history", games.len());
+        for (i, game) in games.iter().enumerate() {
+            debug!("  [{}] {} - {:?}", i, game.name, game.path);
+        }
         
         if games.is_empty() {
             warn!("No games in history to switch to");
@@ -290,6 +298,8 @@ impl View for GameSwitcher {
         commands: Sender<Command>,
         _bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
+        debug!("GameSwitcher::handle_key_event - received event: {:?}", event);
+        
         match event {
             KeyEvent::Pressed(Key::Left) | KeyEvent::Autorepeat(Key::Left) => {
                 if !self.games.is_empty() {
@@ -298,6 +308,7 @@ impl View for GameSwitcher {
                     } else {
                         self.selected - 1
                     };
+                    debug!("Navigate left - selected index: {}", self.selected);
                     self.dirty = true;
                 }
                 Ok(true)
@@ -305,22 +316,36 @@ impl View for GameSwitcher {
             KeyEvent::Pressed(Key::Right) | KeyEvent::Autorepeat(Key::Right) => {
                 if !self.games.is_empty() {
                     self.selected = (self.selected + 1) % self.games.len();
+                    debug!("Navigate right - selected index: {}", self.selected);
                     self.dirty = true;
                 }
                 Ok(true)
             }
             KeyEvent::Pressed(Key::A) => {
+                debug!("A button pressed - attempting to switch game");
                 if !self.games.is_empty() {
                     self.switch_to_game(commands).await?;
+                } else {
+                    warn!("Cannot switch - no games in history");
                 }
                 Ok(true)
             }
             KeyEvent::Pressed(Key::B) => {
-                // Go back to ingame menu
+                debug!("B button pressed - closing game switcher");
+                // Send CloseView command to parent (ingame menu)
                 commands.send(Command::CloseView).await?;
                 Ok(true)
             }
-            _ => Ok(false),
+            KeyEvent::Pressed(Key::Menu) => {
+                debug!("Menu button pressed - closing game switcher");
+                // Also close on Menu button
+                commands.send(Command::CloseView).await?;
+                Ok(true)
+            }
+            _ => {
+                debug!("Unhandled key event: {:?}", event);
+                Ok(false)
+            }
         }
     }
 
@@ -346,7 +371,10 @@ impl GameSwitcher {
     async fn switch_to_game(&self, commands: Sender<Command>) -> Result<()> {
         let game = &self.games[self.selected];
         
+        debug!("=== GAME SWITCH START ===");
         debug!("Switching to game: {}", game.name);
+        debug!("Game path: {:?}", game.path);
+        debug!("Core: {}", game.core);
 
         // Get current game's RetroArch state slot
         let current_game = self.res.get::<GameInfo>();
@@ -354,19 +382,23 @@ impl GameSwitcher {
         
         // Auto-save current game state if it's a RetroArch game
         if current_game.has_menu {
-            debug!("Auto-saving current game to slot {}", slot);
+            debug!("Current game has menu - auto-saving to slot {}", slot);
             RetroArchCommand::SaveStateSlot(slot).send().await?;
             
             // Give RetroArch time to save
+            debug!("Waiting for save to complete...");
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        } else {
+            debug!("Current game does not have menu - skipping auto-save");
         }
         drop(current_game);
 
         // Quit RetroArch
-        debug!("Quitting RetroArch");
+        debug!("Sending quit command to RetroArch");
         RetroArchCommand::Quit.send().await?;
         
         // Give RetroArch time to quit
+        debug!("Waiting for RetroArch to quit...");
         tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
 
         // Create new GameInfo for the selected game
@@ -381,11 +413,15 @@ impl GameSwitcher {
             game.needs_swap,
         );
 
-        debug!("Saving new game info: {:?}", new_game_info);
+        debug!("Created new GameInfo: {:?}", new_game_info);
+        debug!("Saving new game info to disk");
         new_game_info.save()?;
 
-        // Launch the new game
-        commands.send(Command::Exec(new_game_info.command())).await?;
+        // Exit the menu - the launcher will pick up the saved GameInfo and launch it
+        debug!("Sending Exit command - launcher will launch the saved game");
+        commands.send(Command::Exit).await?;
+        
+        debug!("=== GAME SWITCH END ===");
 
         Ok(())
     }

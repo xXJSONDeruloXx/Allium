@@ -24,7 +24,7 @@ use common::view::{
     BatteryIndicator, ButtonHint, ButtonIcon, Clock, Image, ImageMode, Label, NullView, Row,
     SettingsList, View,
 };
-use log::warn;
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tokio::sync::mpsc::Sender;
@@ -265,8 +265,10 @@ where
             }
             MenuEntry::SwitchGame => {
                 // Create GameSwitcher view
+                debug!("Creating GameSwitcher view");
                 match GameSwitcher::new(self.rect, self.res.clone()) {
                     Ok(switcher) => {
+                        debug!("GameSwitcher created successfully");
                         self.child = Some(ChildView::GameSwitcher(switcher));
                     }
                     Err(e) => {
@@ -458,6 +460,7 @@ where
         {
             bubble.retain(|cmd| match cmd {
                 Command::CloseView => {
+                    debug!("Received CloseView command - closing child view");
                     self.child = None;
                     self.set_should_draw();
                     false

@@ -12,7 +12,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Label, Row, View};
+use common::view::{Image, ImageMode, Label, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -39,9 +39,6 @@ pub struct RecentsCarousel {
     screenshot: Image,
     game_name: Label<String>,
     counter_label: Label<String>,
-    button_hints: Row<ButtonHint<String>>,
-    up_arrow: Label<String>,
-    down_arrow: Label<String>,
     dirty: bool,
 }
 
@@ -79,50 +76,6 @@ impl RecentsCarousel {
             None,
         );
 
-        // Up/Down arrow indicators
-        let up_arrow = Label::new(
-            Point::new(x + w as i32 / 2, y + screenshot_height as i32 + 5),
-            "▲".to_string(),
-            Alignment::Center,
-            None,
-        );
-
-        let down_arrow = Label::new(
-            Point::new(x + w as i32 / 2, y + screenshot_height as i32 + 35),
-            "▼".to_string(),
-            Alignment::Center,
-            None,
-        );
-
-        // Button hints at the very bottom
-        let button_hints = Row::new(
-            Point::new(
-                x + 12,
-                y + h as i32 - ButtonIcon::diameter(&styles) as i32 - 8,
-            ),
-            {
-                let locale = res.get::<Locale>();
-                vec![
-                    ButtonHint::new(
-                        res.clone(),
-                        Point::zero(),
-                        Key::A,
-                        locale.t("button-select"),
-                        Alignment::Left,
-                    ),
-                    ButtonHint::new(
-                        res.clone(),
-                        Point::zero(),
-                        Key::X,
-                        locale.t("sort-search"),
-                        Alignment::Left,
-                    ),
-                ]
-            },
-            Alignment::Left,
-            12,
-        );
-
         drop(styles);
 
         let mut carousel = Self {
@@ -133,9 +86,6 @@ impl RecentsCarousel {
             screenshot,
             game_name,
             counter_label,
-            button_hints,
-            up_arrow,
-            down_arrow,
             dirty: true,
         };
 
@@ -400,20 +350,6 @@ impl View for RecentsCarousel {
             if self.counter_label.should_draw() {
                 drawn |= self.counter_label.draw(display, styles)?;
             }
-
-            // Draw arrows
-            if self.selected > 0 && self.up_arrow.should_draw() {
-                drawn |= self.up_arrow.draw(display, styles)?;
-            }
-
-            if self.selected < self.games.len() - 1 && self.down_arrow.should_draw() {
-                drawn |= self.down_arrow.draw(display, styles)?;
-            }
-        }
-
-        // Draw button hints
-        if self.button_hints.should_draw() {
-            drawn |= self.button_hints.draw(display, styles)?;
         }
 
         Ok(drawn)
@@ -424,9 +360,6 @@ impl View for RecentsCarousel {
             || self.screenshot.should_draw()
             || self.game_name.should_draw()
             || self.counter_label.should_draw()
-            || self.up_arrow.should_draw()
-            || self.down_arrow.should_draw()
-            || self.button_hints.should_draw()
     }
 
     fn set_should_draw(&mut self) {
@@ -434,9 +367,6 @@ impl View for RecentsCarousel {
         self.screenshot.set_should_draw();
         self.game_name.set_should_draw();
         self.counter_label.set_should_draw();
-        self.up_arrow.set_should_draw();
-        self.down_arrow.set_should_draw();
-        self.button_hints.set_should_draw();
     }
 
     async fn handle_key_event(

@@ -3,20 +3,19 @@ use std::collections::VecDeque;
 use anyhow::Result;
 use async_trait::async_trait;
 use common::command::Command;
-use common::display::Display;
 use common::geom::{Point, Rect};
-use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
+use common::platform::{DefaultPlatform, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::View;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
-mod recents_carousel;
-mod recents_list;
+pub mod recents_carousel;
+pub mod recents_list;
 
-use recents_carousel::{RecentsCarousel, RecentsCarouselState};
-use recents_list::{RecentsList, RecentsListState};
+pub use recents_carousel::{RecentsCarousel, RecentsCarouselState};
+pub use recents_list::{RecentsList, RecentsListState, RecentsSort};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -27,7 +26,11 @@ pub enum RecentsState {
 
 impl Default for RecentsState {
     fn default() -> Self {
-        RecentsState::List(RecentsListState::default())
+        RecentsState::List(RecentsListState {
+            sort: RecentsSort::LastPlayed,
+            selected: 0,
+            child: None,
+        })
     }
 }
 

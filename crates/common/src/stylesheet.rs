@@ -129,6 +129,8 @@ pub struct Stylesheet {
     pub enable_box_art: bool,
     pub show_battery_level: bool,
     pub show_clock: bool,
+    #[serde(default)]
+    pub use_recents_carousel: bool,
     #[serde(default = "Stylesheet::default_foreground_color")]
     pub foreground_color: Color,
     #[serde(default = "Stylesheet::default_background_color")]
@@ -429,6 +431,7 @@ impl Default for Stylesheet {
             enable_box_art: true,
             show_battery_level: false,
             show_clock: true,
+            use_recents_carousel: true,
             foreground_color: Self::default_foreground_color(),
             background_color: Self::default_background_color(),
             highlight_color: Self::default_highlight_color(),

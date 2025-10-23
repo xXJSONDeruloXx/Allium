@@ -46,21 +46,18 @@ impl RecentsCarousel {
     pub fn new(rect: Rect, res: Resources, state: RecentsCarouselState) -> Result<Self> {
         let Rect { x, y, w, h } = rect;
 
-        // Load recent games from database
         let games = Self::load_games(&res)?;
         let selected = state.selected.min(games.len().saturating_sub(1));
 
         let styles = res.get::<Stylesheet>();
 
-        // Full-screen screenshot image that takes up most of the screen
-        let screenshot_height = h - 100; // Leave room for game name bar and button hints
+        let screenshot_height = h - 100;
         let mut screenshot = Image::empty(
             Rect::new(x, y, w, screenshot_height),
             ImageMode::Contain,
         );
         screenshot.set_alignment(Alignment::Center);
 
-        // Game name label at the bottom with semi-transparent background
         let game_name = Label::new(
             Point::new(x + w as i32 / 2, y + screenshot_height as i32 + 20),
             String::new(),
@@ -68,7 +65,6 @@ impl RecentsCarousel {
             None,
         );
 
-        // Counter label (e.g., "1/10")
         let counter_label = Label::new(
             Point::new(x + w as i32 - 12, y + screenshot_height as i32 + 20),
             String::new(),
@@ -262,20 +258,16 @@ impl View for RecentsCarousel {
         let mut drawn = false;
 
         if self.dirty {
-            // Clear the entire area with background color
             display.load(self.rect)?;
             self.dirty = false;
             drawn = true;
         }
 
-        // Draw the screenshot
         if self.screenshot.should_draw() {
             drawn |= self.screenshot.draw(display, styles)?;
         }
 
-        // Draw semi-transparent overlay for game name area
         if self.games.is_empty() {
-            // Show empty state
             let locale = self.res.get::<Locale>();
             let mut empty_label = Label::new(
                 Point::new(
@@ -288,12 +280,10 @@ impl View for RecentsCarousel {
             );
             drawn |= empty_label.draw(display, styles)?;
         } else {
-            // Draw game name
             if self.game_name.should_draw() {
                 drawn |= self.game_name.draw(display, styles)?;
             }
 
-            // Draw counter
             if self.counter_label.should_draw() {
                 drawn |= self.counter_label.draw(display, styles)?;
             }
@@ -335,10 +325,7 @@ impl View for RecentsCarousel {
                 self.launch_game(commands).await?;
                 Ok(true)
             }
-            KeyEvent::Pressed(Key::X) => {
-                // TODO: Implement search
-                Ok(true)
-            }
+            KeyEvent::Pressed(Key::X) => Ok(true),
             _ => Ok(false),
         }
     }

@@ -45,8 +45,7 @@ Allium supports both the Miyoo Mini, Miyoo Mini Plus,and Miyoo Mini Flip on the 
 - Box art (250px wide, PNG, JPG, GIF)
 - Supports gameslist.xml with nested folders
 - Favorites
-- Recents list (sort by last played or playtime)
-- Alternative OnionOS style GameSwitcher with save-state screenshot previews
+- Recents list with GameSwitcher style save-state screenshots
 - Search games by name
 - Activity tracker
 - [RetroArch for all supported cores](https://github.com/goweiwen/Allium/wiki/Console-Mapper)

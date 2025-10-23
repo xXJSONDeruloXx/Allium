@@ -1,84 +1,281 @@
 use std::collections::VecDeque;
+use std::path::PathBuf;
+use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use common::command::Command;
+use common::command::{Command, Value};
+use common::constants::{ALLIUM_SCREENSHOTS_DIR, RECENT_GAMES_LIMIT};
+use common::database::Database;
 use common::display::Display;
-use common::geom::{Point, Rect};
+use common::geom::{Alignment, Point, Rect};
+use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::View;
+use common::view::{Image, ImageMode, Keyboard, Label, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
-mod recents_carousel;
-mod recents_list;
-
-use recents_carousel::{RecentsCarousel, RecentsCarouselState};
-use recents_list::{RecentsList, RecentsListState};
+use crate::consoles::ConsoleMapper;
+use crate::entry::game::Game;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum RecentsState {
-    Carousel(RecentsCarouselState),
-    List(RecentsListState),
+pub struct RecentsState {
+    pub selected: usize,
 }
 
 impl Default for RecentsState {
     fn default() -> Self {
-        RecentsState::List(RecentsListState::default())
+        Self { selected: 0 }
     }
 }
 
 #[derive(Debug)]
-pub enum Recents {
-    Carousel(RecentsCarousel),
-    List(RecentsList),
+pub struct Recents {
+    rect: Rect,
+    res: Resources,
+    games: Vec<Game>,
+    selected: usize,
+    screenshot: Image,
+    game_name: Label<String>,
+    counter_label: Label<String>,
+    keyboard: Option<Keyboard>,
+    dirty: bool,
 }
 
 impl Recents {
-    pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsState>) -> Result<Self> {
-        let use_carousel = res.get::<Stylesheet>().use_recents_carousel;
-        
-        if use_carousel {
-            let carousel_state = match state {
-                Some(RecentsState::Carousel(s)) => Some(s),
-                _ => None,
-            };
-            Ok(Self::Carousel(RecentsCarousel::load_or_new(
-                rect,
-                res,
-                carousel_state,
-            )?))
-        } else {
-            let list_state = match state {
-                Some(RecentsState::List(s)) => Some(s),
-                _ => None,
-            };
-            Ok(Self::List(RecentsList::load_or_new(rect, res, list_state)?))
-        }
+    pub fn new(rect: Rect, res: Resources, state: RecentsState) -> Result<Self> {
+        let Rect { x, y, w, h } = rect;
+
+        let games = Self::load_games(&res)?;
+        let selected = state.selected.min(games.len().saturating_sub(1));
+
+        let styles = res.get::<Stylesheet>();
+
+        let screenshot_height = h - 100;
+        let mut screenshot = Image::empty(
+            Rect::new(x, y, w, screenshot_height),
+            ImageMode::Contain,
+        );
+        screenshot.set_alignment(Alignment::Center);
+
+        let game_name = Label::new(
+            Point::new(x + w as i32 / 2, y + screenshot_height as i32 + 20),
+            String::new(),
+            Alignment::Center,
+            None,
+        );
+
+        let counter_label = Label::new(
+            Point::new(x + w as i32 - 12, y + screenshot_height as i32 + 20),
+            String::new(),
+            Alignment::Right,
+            None,
+        );
+
+        drop(styles);
+
+        let mut carousel = Self {
+            rect,
+            res,
+            games,
+            selected,
+            screenshot,
+            game_name,
+            counter_label,
+            keyboard: None,
+            dirty: true,
+        };
+
+        carousel.update_current_game()?;
+
+        Ok(carousel)
     }
 
-    pub fn save(&self) -> RecentsState {
-        match self {
-            Self::Carousel(c) => RecentsState::Carousel(c.save()),
-            Self::List(l) => RecentsState::List(l.save()),
+    pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsState>) -> Result<Self> {
+        let state = state.unwrap_or_default();
+        Self::new(rect, res, state)
+    }
+
+    fn load_games(res: &Resources) -> Result<Vec<Game>> {
+        let database = res.get::<Database>();
+        let games = database.select_last_played(RECENT_GAMES_LIMIT)?;
+
+        Ok(games
+            .into_iter()
+            .map(|game| {
+                let extension = game
+                    .path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or_default()
+                    .to_owned();
+                
+                let image = crate::entry::lazy_image::LazyImage::from_path(
+                    &game.path,
+                    game.image.clone(),
+                );
+                
+                Game {
+                    name: game.name.clone(),
+                    full_name: game.name,
+                    path: game.path,
+                    image,
+                    extension,
+                    core: game.core,
+                    rating: game.rating,
+                    release_date: game.release_date,
+                    developer: game.developer,
+                    publisher: game.publisher,
+                    genres: game.genres,
+                    favorite: game.favorite,
+                }
+            })
+            .collect())
+    }
+
+    fn update_current_game(&mut self) -> Result<()> {
+        if self.games.is_empty() {
+            self.screenshot.set_path(None);
+            self.game_name.set_text(String::new());
+            self.counter_label.set_text(String::new());
+            return Ok(());
         }
+
+        let game = &self.games[self.selected];
+
+        let screenshot_path = if self.selected == 0 {
+            Self::find_screenshot_for_game_with_retry(&game.path)
+        } else {
+            Self::find_screenshot_for_game(&game.path)
+        };
+        
+        self.screenshot.set_path(screenshot_path);
+        self.game_name.set_text(game.name.clone());
+        self.counter_label
+            .set_text(format!("{}/{}", self.selected + 1, self.games.len()));
+
+        self.dirty = true;
+        Ok(())
     }
 
     pub fn start_search(&mut self) {
-        match self {
-            Self::Carousel(c) => c.start_search(),
-            Self::List(l) => l.start_search(),
-        }
+        self.keyboard = Some(Keyboard::new(self.res.clone(), String::new(), false));
     }
 
-    pub fn search(&mut self, query: String) -> Result<()> {
-        match self {
-            Self::Carousel(c) => c.search(query),
-            Self::List(l) => l.search(query),
+    pub fn search(&mut self, _query: String) -> Result<()> {
+        Ok(())
+    }
+
+    pub async fn try_search(&mut self, commands: Sender<Command>, query: String) -> Result<()> {
+        if !self.res.get::<Database>().has_indexed()? {
+            let toast = self.res.get::<Locale>().t("populating-database");
+            commands.send(Command::Toast(toast, None)).await?;
+            commands.send(Command::PopulateDb).await?;
+            commands
+                .send(Command::Toast(String::new(), Some(Duration::ZERO)))
+                .await?;
         }
+
+        commands.send(Command::Search(query)).await?;
+
+        Ok(())
+    }
+
+    fn find_screenshot_for_game_with_retry(game_path: &PathBuf) -> Option<PathBuf> {
+        use std::thread;
+        use std::time::Duration;
+        
+        for attempt in 0..5 {
+            if attempt > 0 {
+                let delay_ms = attempt * 50;
+                thread::sleep(Duration::from_millis(delay_ms as u64));
+            }
+            
+            if let Some(screenshot) = Self::find_screenshot_for_game(game_path) {
+                return Some(screenshot);
+            }
+        }
+        
+        None
+    }
+
+    fn find_screenshot_for_game(game_path: &PathBuf) -> Option<PathBuf> {
+        use std::fs;
+        use std::io::{BufRead, BufReader};
+        
+        let manifest_path = ALLIUM_SCREENSHOTS_DIR.join("manifest.txt");
+        
+        if let Ok(file) = fs::File::open(&manifest_path) {
+            let reader = BufReader::new(file);
+            let mut matching_entries: Vec<(u64, PathBuf)> = Vec::new();
+            
+            let game_path_str = game_path.to_string_lossy();
+            
+            for line in reader.lines().filter_map(|l| l.ok()) {
+                let parts: Vec<&str> = line.split('|').collect();
+                if parts.len() >= 3 {
+                    if let Ok(timestamp) = parts[0].parse::<u64>() {
+                        let filename = parts[1];
+                        let manifest_game_path = parts[2].trim();
+                        
+                        if manifest_game_path == game_path_str {
+                            let screenshot_path = ALLIUM_SCREENSHOTS_DIR.join(filename);
+                            if screenshot_path.exists() {
+                                matching_entries.push((timestamp, screenshot_path));
+                            }
+                        }
+                    }
+                }
+            }
+            
+            matching_entries.sort_by(|a, b| b.0.cmp(&a.0));
+            return matching_entries.first().map(|(_, path)| path.clone());
+        }
+        
+        None
+    }
+
+    pub fn save(&self) -> RecentsState {
+        RecentsState { selected: 0 }
+    }
+
+    pub fn reset_selection(&mut self) -> Result<()> {
+        if self.selected != 0 {
+            self.selected = 0;
+            self.update_current_game()?;
+        }
+        Ok(())
+    }
+
+    fn navigate_up(&mut self) -> Result<()> {
+        if self.selected > 0 {
+            self.selected -= 1;
+            self.update_current_game()?;
+        }
+        Ok(())
+    }
+
+    fn navigate_down(&mut self) -> Result<()> {
+        if self.selected < self.games.len().saturating_sub(1) {
+            self.selected += 1;
+            self.update_current_game()?;
+        }
+        Ok(())
+    }
+
+    async fn launch_game(&mut self, commands: Sender<Command>) -> Result<()> {
+        if let Some(game) = self.games.get_mut(self.selected) {
+            let command = self
+                .res
+                .get::<ConsoleMapper>()
+                .launch_game(&self.res.get(), game, false)?;
+            if let Some(cmd) = command {
+                commands.send(cmd).await?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -89,23 +286,66 @@ impl View for Recents {
         display: &mut <DefaultPlatform as Platform>::Display,
         styles: &Stylesheet,
     ) -> Result<bool> {
-        match self {
-            Self::Carousel(c) => c.draw(display, styles),
-            Self::List(l) => l.draw(display, styles),
+        let mut drawn = false;
+
+        if self.dirty {
+            display.load(self.rect)?;
+            self.dirty = false;
+            drawn = true;
         }
+
+        if self.screenshot.should_draw() {
+            drawn |= self.screenshot.draw(display, styles)?;
+        }
+
+        if self.games.is_empty() {
+            let locale = self.res.get::<Locale>();
+            let mut empty_label = Label::new(
+                Point::new(
+                    self.rect.x + self.rect.w as i32 / 2,
+                    self.rect.y + self.rect.h as i32 / 2,
+                ),
+                locale.t("no-recent-games"),
+                Alignment::Center,
+                None,
+            );
+            drawn |= empty_label.draw(display, styles)?;
+        } else {
+            if self.game_name.should_draw() {
+                drawn |= self.game_name.draw(display, styles)?;
+            }
+
+            if self.counter_label.should_draw() {
+                drawn |= self.counter_label.draw(display, styles)?;
+            }
+        }
+
+        if let Some(keyboard) = self.keyboard.as_mut() {
+            if drawn {
+                keyboard.set_should_draw();
+            }
+            drawn |= keyboard.should_draw() && keyboard.draw(display, styles)?;
+        }
+
+        Ok(drawn)
     }
 
     fn should_draw(&self) -> bool {
-        match self {
-            Self::Carousel(c) => c.should_draw(),
-            Self::List(l) => l.should_draw(),
-        }
+        self.dirty
+            || self.screenshot.should_draw()
+            || self.game_name.should_draw()
+            || self.counter_label.should_draw()
+            || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
     }
 
     fn set_should_draw(&mut self) {
-        match self {
-            Self::Carousel(c) => c.set_should_draw(),
-            Self::List(l) => l.set_should_draw(),
+        let _ = self.reset_selection();
+        self.dirty = true;
+        self.screenshot.set_should_draw();
+        self.game_name.set_should_draw();
+        self.counter_label.set_should_draw();
+        if let Some(keyboard) = self.keyboard.as_mut() {
+            keyboard.set_should_draw();
         }
     }
 
@@ -115,37 +355,71 @@ impl View for Recents {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        match self {
-            Self::Carousel(c) => c.handle_key_event(event, commands, bubble).await,
-            Self::List(l) => l.handle_key_event(event, commands, bubble).await,
+        if let Some(keyboard) = self.keyboard.as_mut()
+            && keyboard
+                .handle_key_event(event, commands.clone(), bubble)
+                .await?
+        {
+            let mut query = None;
+            bubble.retain_mut(|c| match c {
+                Command::ValueChanged(_, val) => {
+                    if let Value::String(val) = val {
+                        query = Some(val.clone());
+                    }
+                    false
+                }
+                Command::CloseView => {
+                    self.keyboard = None;
+                    false
+                }
+                _ => true,
+            });
+            if let Some(query) = query {
+                self.try_search(commands, query).await?;
+            }
+            return Ok(true);
+        }
+
+        match event {
+            KeyEvent::Pressed(Key::Up) | KeyEvent::Autorepeat(Key::Up) => {
+                self.navigate_up()?;
+                Ok(true)
+            }
+            KeyEvent::Pressed(Key::Down) | KeyEvent::Autorepeat(Key::Down) => {
+                self.navigate_down()?;
+                Ok(true)
+            }
+            KeyEvent::Pressed(Key::A) => {
+                self.launch_game(commands).await?;
+                Ok(true)
+            }
+            KeyEvent::Pressed(Key::X) => {
+                if self.keyboard.is_none() {
+                    self.start_search();
+                } else {
+                    self.keyboard = None;
+                    commands.send(Command::Redraw).await?;
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        match self {
-            Self::Carousel(c) => c.children(),
-            Self::List(l) => l.children(),
-        }
+        vec![]
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
-        match self {
-            Self::Carousel(c) => c.children_mut(),
-            Self::List(l) => l.children_mut(),
-        }
+        vec![]
     }
 
-    fn bounding_box(&mut self, styles: &Stylesheet) -> Rect {
-        match self {
-            Self::Carousel(c) => c.bounding_box(styles),
-            Self::List(l) => l.bounding_box(styles),
-        }
+    fn bounding_box(&mut self, _styles: &Stylesheet) -> Rect {
+        self.rect
     }
 
     fn set_position(&mut self, point: Point) {
-        match self {
-            Self::Carousel(c) => c.set_position(point),
-            Self::List(l) => l.set_position(point),
-        }
+        self.rect.x = point.x;
+        self.rect.y = point.y;
     }
 }

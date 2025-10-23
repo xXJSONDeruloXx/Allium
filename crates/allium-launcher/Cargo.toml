@@ -28,8 +28,6 @@ regex.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 serial_test.workspace = true
-sha2.workspace = true
-base32.workspace = true
 simple_logger = { workspace = true, default-features = false }
 strum.workspace = true
 sysinfo.workspace = true

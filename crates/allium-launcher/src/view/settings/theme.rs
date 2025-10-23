@@ -57,6 +57,7 @@ impl Theme {
                 locale.t("settings-theme-dark-mode"),
                 locale.t("settings-theme-show-battery-level"),
                 locale.t("settings-theme-show-clock"),
+                locale.t("settings-theme-use-recents-carousel"),
                 locale.t("settings-theme-ui-font"),
                 locale.t("settings-theme-ui-font-size"),
                 locale.t("settings-theme-guide-font"),
@@ -89,6 +90,11 @@ impl Theme {
                 Box::new(Toggle::new(
                     Point::zero(),
                     stylesheet.show_clock,
+                    Alignment::Right,
+                )),
+                Box::new(Toggle::new(
+                    Point::zero(),
+                    stylesheet.use_recents_carousel,
                     Alignment::Right,
                 )),
                 Box::new(Select::new(
@@ -284,7 +290,7 @@ impl View for Theme {
                         0 => {
                             self.stylesheet.toggle_dark_mode();
                             self.list.set_right(
-                                10,
+                                11,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.foreground_color,
@@ -292,7 +298,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                11,
+                                12,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.background_color,
@@ -300,7 +306,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                12,
+                                13,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.disabled_color,
@@ -308,7 +314,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                13,
+                                14,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.tab_color,
@@ -316,7 +322,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                14,
+                                15,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.tab_selected_color,
@@ -324,7 +330,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                15,
+                                16,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.button_a_color,
@@ -332,7 +338,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                16,
+                                17,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.button_b_color,
@@ -340,7 +346,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                17,
+                                18,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.button_x_color,
@@ -348,7 +354,7 @@ impl View for Theme {
                                 )),
                             );
                             self.list.set_right(
-                                18,
+                                19,
                                 Box::new(ColorPicker::new(
                                     Point::zero(),
                                     self.stylesheet.button_y_color,
@@ -358,37 +364,38 @@ impl View for Theme {
                         }
                         1 => self.stylesheet.toggle_battery_percentage(),
                         2 => self.stylesheet.toggle_clock(),
-                        3 => self
+                        3 => self.stylesheet.use_recents_carousel = !self.stylesheet.use_recents_carousel,
+                        4 => self
                             .stylesheet
                             .ui_font
                             .path
                             .clone_from(&self.fonts[val.as_int().unwrap() as usize]),
-                        4 => self.stylesheet.ui_font.size = val.as_int().unwrap() as u32,
-                        5 => self
+                        5 => self.stylesheet.ui_font.size = val.as_int().unwrap() as u32,
+                        6 => self
                             .stylesheet
                             .guide_font
                             .path
                             .clone_from(&self.fonts[val.as_int().unwrap() as usize]),
-                        6 => self.stylesheet.guide_font.size = val.as_int().unwrap() as u32,
-                        7 => self.stylesheet.tab_font_size = val.as_int().unwrap() as f32 / 100.0,
-                        8 => {
+                        7 => self.stylesheet.guide_font.size = val.as_int().unwrap() as u32,
+                        8 => self.stylesheet.tab_font_size = val.as_int().unwrap() as f32 / 100.0,
+                        9 => {
                             self.stylesheet.status_bar_font_size =
                                 val.as_int().unwrap() as f32 / 100.0
                         }
-                        9 => {
+                        10 => {
                             self.stylesheet.button_hint_font_size =
                                 val.as_int().unwrap() as f32 / 100.0
                         }
-                        10 => self.stylesheet.highlight_color = val.as_color().unwrap(),
-                        11 => self.stylesheet.foreground_color = val.as_color().unwrap(),
-                        12 => self.stylesheet.background_color = val.as_color().unwrap(),
-                        13 => self.stylesheet.disabled_color = val.as_color().unwrap(),
-                        14 => self.stylesheet.tab_color = val.as_color().unwrap(),
-                        15 => self.stylesheet.tab_selected_color = val.as_color().unwrap(),
-                        16 => self.stylesheet.button_a_color = val.as_color().unwrap(),
-                        17 => self.stylesheet.button_b_color = val.as_color().unwrap(),
-                        18 => self.stylesheet.button_x_color = val.as_color().unwrap(),
-                        19 => self.stylesheet.button_y_color = val.as_color().unwrap(),
+                        11 => self.stylesheet.highlight_color = val.as_color().unwrap(),
+                        12 => self.stylesheet.foreground_color = val.as_color().unwrap(),
+                        13 => self.stylesheet.background_color = val.as_color().unwrap(),
+                        14 => self.stylesheet.disabled_color = val.as_color().unwrap(),
+                        15 => self.stylesheet.tab_color = val.as_color().unwrap(),
+                        16 => self.stylesheet.tab_selected_color = val.as_color().unwrap(),
+                        17 => self.stylesheet.button_a_color = val.as_color().unwrap(),
+                        18 => self.stylesheet.button_b_color = val.as_color().unwrap(),
+                        19 => self.stylesheet.button_x_color = val.as_color().unwrap(),
+                        20 => self.stylesheet.button_y_color = val.as_color().unwrap(),
                         _ => unreachable!("Invalid index"),
                     }
 

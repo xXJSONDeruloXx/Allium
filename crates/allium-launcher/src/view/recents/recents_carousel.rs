@@ -21,18 +21,18 @@ use crate::consoles::ConsoleMapper;
 use crate::entry::game::Game;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RecentsState {
+pub struct RecentsCarouselState {
     pub selected: usize,
 }
 
-impl Default for RecentsState {
+impl Default for RecentsCarouselState {
     fn default() -> Self {
         Self { selected: 0 }
     }
 }
 
 #[derive(Debug)]
-pub struct Recents {
+pub struct RecentsCarousel {
     rect: Rect,
     res: Resources,
     games: Vec<Game>,
@@ -44,8 +44,8 @@ pub struct Recents {
     dirty: bool,
 }
 
-impl Recents {
-    pub fn new(rect: Rect, res: Resources, state: RecentsState) -> Result<Self> {
+impl RecentsCarousel {
+    pub fn new(rect: Rect, res: Resources, state: RecentsCarouselState) -> Result<Self> {
         let Rect { x, y, w, h } = rect;
 
         let games = Self::load_games(&res)?;
@@ -93,7 +93,7 @@ impl Recents {
         Ok(carousel)
     }
 
-    pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsState>) -> Result<Self> {
+    pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsCarouselState>) -> Result<Self> {
         let state = state.unwrap_or_default();
         Self::new(rect, res, state)
     }
@@ -237,8 +237,8 @@ impl Recents {
         None
     }
 
-    pub fn save(&self) -> RecentsState {
-        RecentsState { selected: 0 }
+    pub fn save(&self) -> RecentsCarouselState {
+        RecentsCarouselState { selected: 0 }
     }
 
     pub fn reset_selection(&mut self) -> Result<()> {
@@ -280,7 +280,7 @@ impl Recents {
 }
 
 #[async_trait(?Send)]
-impl View for Recents {
+impl View for RecentsCarousel {
     fn draw(
         &mut self,
         display: &mut <DefaultPlatform as Platform>::Display,

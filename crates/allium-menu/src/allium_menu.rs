@@ -145,8 +145,8 @@ impl AlliumMenu<DefaultPlatform> {
                     }
                     
                     let mut hasher = Sha256::new();
-                    hasher.update(path);
-                    hasher.update(core);
+                    hasher.update(&path);
+                    hasher.update(&core);
                     hasher.update(slot.to_le_bytes());
                     let hash = hasher.finalize();
                     let base32 = encode(base32::Alphabet::Crockford, &hash);
@@ -160,6 +160,20 @@ impl AlliumMenu<DefaultPlatform> {
                     {
                         writeln!(f, "Computed hash: {}", base32).ok();
                         writeln!(f, "Filename: {}", file_name).ok();
+                    }
+                    
+                    // Write to screenshot manifest (append mode - newest at bottom)
+                    use std::time::{SystemTime, UNIX_EPOCH};
+                    let ts = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .map(|d| d.as_secs())
+                        .unwrap_or_default();
+                    if let Ok(mut f) = std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(ALLIUM_SCREENSHOTS_DIR.join("manifest.txt"))
+                    {
+                        writeln!(f, "{}|{}|{}", ts, file_name, path).ok();
                     }
                     
                     let path = ALLIUM_SCREENSHOTS_DIR.join(file_name);

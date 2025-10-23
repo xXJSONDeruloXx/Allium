@@ -35,7 +35,6 @@ pub struct RecentsCarousel {
     rect: Rect,
     res: Resources,
     games: Vec<Game>,
-    screenshots: Vec<PathBuf>,
     selected: usize,
     screenshot: Image,
     game_name: Label<String>,
@@ -126,14 +125,10 @@ impl RecentsCarousel {
 
         drop(styles);
 
-        // Load screenshots sorted by modification time
-        let screenshots = Self::load_screenshots_by_time();
-
         let mut carousel = Self {
             rect,
             res,
             games,
-            screenshots,
             selected,
             screenshot,
             game_name,
@@ -248,14 +243,13 @@ impl RecentsCarousel {
             game.path,
         );
 
-        // Get screenshot by index - since both are sorted by time (newest first),
-        // the indices should match
-        let screenshot_path = self.screenshots.get(self.selected).cloned();
+        // Find the most recent screenshot that matches this game's path
+        let screenshot_path = Self::find_screenshot_for_game(&game.path);
         
         if screenshot_path.is_some() {
-            log::info!("RecentsCarousel: Screenshot found for: {} at index {}", game.name, self.selected);
+            log::info!("RecentsCarousel: Screenshot found for: {}", game.name);
         } else {
-            log::warn!("RecentsCarousel: No screenshot available for: {} at index {}", game.name, self.selected);
+            log::warn!("RecentsCarousel: No screenshot available for: {}", game.name);
         }
         self.screenshot.set_path(screenshot_path);
 
@@ -270,29 +264,59 @@ impl RecentsCarousel {
         Ok(())
     }
 
-    fn load_screenshots_by_time() -> Vec<PathBuf> {
+    /// Find the most recent screenshot that matches the given game path
+    fn find_screenshot_for_game(game_path: &PathBuf) -> Option<PathBuf> {
         use std::fs;
+        use std::io::{BufRead, BufReader};
         
-        // Get all screenshots and sort by modification time (newest first)
-        let mut screenshots: Vec<(PathBuf, std::time::SystemTime)> = Vec::new();
+        let manifest_path = ALLIUM_SCREENSHOTS_DIR.join("manifest.txt");
         
-        if let Ok(entries) = fs::read_dir(&*ALLIUM_SCREENSHOTS_DIR) {
-            for entry in entries.filter_map(|e| e.ok()) {
-                let path = entry.path();
-                if path.extension().and_then(|e| e.to_str()) == Some("png") {
-                    if let Ok(metadata) = entry.metadata() {
-                        if let Ok(modified) = metadata.modified() {
-                            screenshots.push((path, modified));
+        log::debug!("Looking for screenshot for game: {:?}", game_path);
+        
+        if let Ok(file) = fs::File::open(&manifest_path) {
+            let reader = BufReader::new(file);
+            let mut matching_entries: Vec<(u64, PathBuf)> = Vec::new();
+            
+            // Convert game_path to string for comparison
+            let game_path_str = game_path.to_string_lossy();
+            
+            for line in reader.lines().filter_map(|l| l.ok()) {
+                let parts: Vec<&str> = line.split('|').collect();
+                if parts.len() >= 3 {
+                    if let Ok(timestamp) = parts[0].parse::<u64>() {
+                        let filename = parts[1];
+                        let manifest_game_path = parts[2].trim(); // Trim any whitespace
+                        
+                        log::debug!("Manifest entry: ts={}, path={}", timestamp, manifest_game_path);
+                        
+                        // Match by game path
+                        if manifest_game_path == game_path_str {
+                            let screenshot_path = ALLIUM_SCREENSHOTS_DIR.join(filename);
+                            if screenshot_path.exists() {
+                                log::debug!("Found matching screenshot: {:?}", screenshot_path);
+                                matching_entries.push((timestamp, screenshot_path));
+                            }
                         }
                     }
                 }
             }
+            
+            // Sort by timestamp, newest first (reverse order) and return the most recent
+            matching_entries.sort_by(|a, b| b.0.cmp(&a.0));
+            let result = matching_entries.first().map(|(_, path)| path.clone());
+            
+            if let Some(ref path) = result {
+                log::info!("Selected screenshot: {:?} (from {} matches)", path, matching_entries.len());
+            } else {
+                log::warn!("No screenshots found for game: {:?}", game_path);
+            }
+            
+            return result;
+        } else {
+            log::warn!("Could not open manifest file: {:?}", manifest_path);
         }
         
-        // Sort by modification time, newest first
-        screenshots.sort_by(|a, b| b.1.cmp(&a.1));
-        
-        screenshots.into_iter().map(|(path, _)| path).collect()
+        None
     }
 
     pub fn save(&self) -> RecentsCarouselState {

@@ -123,27 +123,6 @@ impl AlliumMenu<DefaultPlatform> {
                     self.display.load(self.display.bounding_box().into())?;
                     self.display.flush()?;
                     
-                    // Log to file for debugging
-                    use std::io::Write;
-                    if let Ok(mut f) = std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open("/mnt/SDCARD/allium-screenshot-creation.log")
-                    {
-                        use std::time::{SystemTime, UNIX_EPOCH};
-                        let ts = SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .map(|d| d.as_secs())
-                            .unwrap_or_default();
-                        writeln!(f, "\n=== Screenshot Creation at {} ===", ts).ok();
-                        writeln!(f, "Path (raw): {:?}", path).ok();
-                        writeln!(f, "Core: {:?}", core).ok();
-                        writeln!(f, "Slot: {}", slot).ok();
-                        writeln!(f, "Path bytes: {:?}", path.as_bytes()).ok();
-                        writeln!(f, "Core bytes: {:?}", core.as_bytes()).ok();
-                        writeln!(f, "Slot bytes: {:?}", slot.to_le_bytes()).ok();
-                    }
-                    
                     let mut hasher = Sha256::new();
                     hasher.update(&path);
                     hasher.update(&core);
@@ -152,17 +131,6 @@ impl AlliumMenu<DefaultPlatform> {
                     let base32 = encode(base32::Alphabet::Crockford, &hash);
                     let file_name = format!("{}.png", base32);
                     
-                    // Log the computed hash
-                    if let Ok(mut f) = std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open("/mnt/SDCARD/allium-screenshot-creation.log")
-                    {
-                        writeln!(f, "Computed hash: {}", base32).ok();
-                        writeln!(f, "Filename: {}", file_name).ok();
-                    }
-                    
-                    // Write to screenshot manifest (append mode - newest at bottom)
                     use std::time::{SystemTime, UNIX_EPOCH};
                     let ts = SystemTime::now()
                         .duration_since(UNIX_EPOCH)
@@ -173,6 +141,7 @@ impl AlliumMenu<DefaultPlatform> {
                         .append(true)
                         .open(ALLIUM_SCREENSHOTS_DIR.join("manifest.txt"))
                     {
+                        use std::io::Write;
                         writeln!(f, "{}|{}|{}", ts, file_name, path).ok();
                     }
                     

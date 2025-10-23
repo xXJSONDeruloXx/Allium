@@ -98,28 +98,6 @@ impl RecentsCarousel {
         let database = res.get::<Database>();
         let games = database.select_last_played(RECENT_GAMES_LIMIT)?;
 
-        log::debug!("RecentsCarousel: Loaded {} recent games", games.len());
-
-        // Log database game info to file
-        use std::io::Write;
-        if let Ok(mut f) = std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open("/mnt/SDCARD/allium-recents-db.log")
-        {
-            use std::time::{SystemTime, UNIX_EPOCH};
-            let ts = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map(|d| d.as_secs())
-                .unwrap_or_default();
-            writeln!(f, "\n=== Loading games from database at {} ===", ts).ok();
-            for game in &games {
-                writeln!(f, "Game: {}", game.name).ok();
-                writeln!(f, "  Path: {:?}", game.path).ok();
-                writeln!(f, "  Core from DB: {:?}", game.core).ok();
-            }
-        }
-
         Ok(games
             .into_iter()
             .map(|game| {
@@ -153,65 +131,24 @@ impl RecentsCarousel {
             .collect())
     }
 
-    // Append a line to a log file on the SD card root for easier debugging after eject
-    fn sd_log_line(&self, line: &str) {
-        use std::io::Write;
-        use std::time::{SystemTime, UNIX_EPOCH};
-
-        // Prefer ALLIUM_SD_ROOT if available, otherwise /mnt/SDCARD
-        let base = common::constants::ALLIUM_SD_ROOT.clone();
-        let log_path = base.join("allium-recents.log");
-
-        if let Ok(mut f) = std::fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&log_path)
-        {
-            let ts = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map(|d| d.as_secs())
-                .unwrap_or_default();
-            let _ = writeln!(f, "{}: {}", ts, line);
-        }
-    }
-
     fn update_current_game(&mut self) -> Result<()> {
         if self.games.is_empty() {
             self.screenshot.set_path(None);
             self.game_name.set_text(String::new());
             self.counter_label.set_text(String::new());
-            log::debug!("RecentsCarousel: No games to display");
             return Ok(());
         }
 
         let game = &self.games[self.selected];
-        log::info!(
-            "RecentsCarousel: Updating to game {}/{}: '{}' at path: {:?}",
-            self.selected + 1,
-            self.games.len(),
-            game.name,
-            game.path,
-        );
 
-        // Find the most recent screenshot that matches this game's path
-        // For the first entry (most recent game), retry with delays to handle race conditions
         let screenshot_path = if self.selected == 0 {
             Self::find_screenshot_for_game_with_retry(&game.path)
         } else {
             Self::find_screenshot_for_game(&game.path)
         };
         
-        if screenshot_path.is_some() {
-            log::info!("RecentsCarousel: Screenshot found for: {}", game.name);
-        } else {
-            log::warn!("RecentsCarousel: No screenshot available for: {}", game.name);
-        }
         self.screenshot.set_path(screenshot_path);
-
-        // Update game name
         self.game_name.set_text(game.name.clone());
-
-        // Update counter
         self.counter_label
             .set_text(format!("{}/{}", self.selected + 1, self.games.len()));
 
@@ -219,47 +156,34 @@ impl RecentsCarousel {
         Ok(())
     }
 
-    /// Find the most recent screenshot that matches the given game path
-    /// This version retries with delays to handle race conditions with screenshot creation
     fn find_screenshot_for_game_with_retry(game_path: &PathBuf) -> Option<PathBuf> {
         use std::thread;
         use std::time::Duration;
         
-        // Try up to 5 times with increasing delays (50ms, 100ms, 150ms, 200ms, 250ms)
-        // Total max wait: ~750ms
         for attempt in 0..5 {
             if attempt > 0 {
                 let delay_ms = attempt * 50;
-                log::debug!("Retry attempt {} after {}ms delay", attempt, delay_ms);
                 thread::sleep(Duration::from_millis(delay_ms as u64));
             }
             
             if let Some(screenshot) = Self::find_screenshot_for_game(game_path) {
-                if attempt > 0 {
-                    log::info!("Screenshot found on retry attempt {}", attempt);
-                }
                 return Some(screenshot);
             }
         }
         
-        log::warn!("No screenshot found after retries for: {:?}", game_path);
         None
     }
 
-    /// Find the most recent screenshot that matches the given game path
     fn find_screenshot_for_game(game_path: &PathBuf) -> Option<PathBuf> {
         use std::fs;
         use std::io::{BufRead, BufReader};
         
         let manifest_path = ALLIUM_SCREENSHOTS_DIR.join("manifest.txt");
         
-        log::debug!("Looking for screenshot for game: {:?}", game_path);
-        
         if let Ok(file) = fs::File::open(&manifest_path) {
             let reader = BufReader::new(file);
             let mut matching_entries: Vec<(u64, PathBuf)> = Vec::new();
             
-            // Convert game_path to string for comparison
             let game_path_str = game_path.to_string_lossy();
             
             for line in reader.lines().filter_map(|l| l.ok()) {
@@ -267,15 +191,11 @@ impl RecentsCarousel {
                 if parts.len() >= 3 {
                     if let Ok(timestamp) = parts[0].parse::<u64>() {
                         let filename = parts[1];
-                        let manifest_game_path = parts[2].trim(); // Trim any whitespace
+                        let manifest_game_path = parts[2].trim();
                         
-                        log::debug!("Manifest entry: ts={}, path={}", timestamp, manifest_game_path);
-                        
-                        // Match by game path
                         if manifest_game_path == game_path_str {
                             let screenshot_path = ALLIUM_SCREENSHOTS_DIR.join(filename);
                             if screenshot_path.exists() {
-                                log::debug!("Found matching screenshot: {:?}", screenshot_path);
                                 matching_entries.push((timestamp, screenshot_path));
                             }
                         }
@@ -283,31 +203,17 @@ impl RecentsCarousel {
                 }
             }
             
-            // Sort by timestamp, newest first (reverse order) and return the most recent
             matching_entries.sort_by(|a, b| b.0.cmp(&a.0));
-            let result = matching_entries.first().map(|(_, path)| path.clone());
-            
-            if let Some(ref path) = result {
-                log::info!("Selected screenshot: {:?} (from {} matches)", path, matching_entries.len());
-            } else {
-                log::warn!("No screenshots found for game: {:?}", game_path);
-            }
-            
-            return result;
-        } else {
-            log::warn!("Could not open manifest file: {:?}", manifest_path);
+            return matching_entries.first().map(|(_, path)| path.clone());
         }
         
         None
     }
 
     pub fn save(&self) -> RecentsCarouselState {
-        RecentsCarouselState {
-            selected: 0, // Always reset to first entry when returning to carousel
-        }
+        RecentsCarouselState { selected: 0 }
     }
 
-    /// Reset selection to the first entry (used when switching back to this tab)
     pub fn reset_selection(&mut self) -> Result<()> {
         if self.selected != 0 {
             self.selected = 0;

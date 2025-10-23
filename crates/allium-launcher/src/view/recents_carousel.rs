@@ -271,8 +271,17 @@ impl RecentsCarousel {
 
     pub fn save(&self) -> RecentsCarouselState {
         RecentsCarouselState {
-            selected: self.selected,
+            selected: 0, // Always reset to first entry when returning to carousel
         }
+    }
+
+    /// Reset selection to the first entry (used when switching back to this tab)
+    pub fn reset_selection(&mut self) -> Result<()> {
+        if self.selected != 0 {
+            self.selected = 0;
+            self.update_current_game()?;
+        }
+        Ok(())
     }
 
     fn navigate_up(&mut self) -> Result<()> {

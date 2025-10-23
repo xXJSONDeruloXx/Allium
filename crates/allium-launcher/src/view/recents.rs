@@ -105,6 +105,8 @@ impl View for Recents {
     }
 
     fn set_should_draw(&mut self) {
+        // Reset carousel to first entry when switching to this tab
+        let _ = self.carousel.reset_selection();
         self.carousel.set_should_draw();
         if let Some(keyboard) = self.keyboard.as_mut() {
             keyboard.set_should_draw();

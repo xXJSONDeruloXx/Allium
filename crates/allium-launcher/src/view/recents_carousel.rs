@@ -194,7 +194,12 @@ impl RecentsCarousel {
         );
 
         // Find the most recent screenshot that matches this game's path
-        let screenshot_path = Self::find_screenshot_for_game(&game.path);
+        // For the first entry (most recent game), retry with delays to handle race conditions
+        let screenshot_path = if self.selected == 0 {
+            Self::find_screenshot_for_game_with_retry(&game.path)
+        } else {
+            Self::find_screenshot_for_game(&game.path)
+        };
         
         if screenshot_path.is_some() {
             log::info!("RecentsCarousel: Screenshot found for: {}", game.name);
@@ -212,6 +217,33 @@ impl RecentsCarousel {
 
         self.dirty = true;
         Ok(())
+    }
+
+    /// Find the most recent screenshot that matches the given game path
+    /// This version retries with delays to handle race conditions with screenshot creation
+    fn find_screenshot_for_game_with_retry(game_path: &PathBuf) -> Option<PathBuf> {
+        use std::thread;
+        use std::time::Duration;
+        
+        // Try up to 5 times with increasing delays (50ms, 100ms, 150ms, 200ms, 250ms)
+        // Total max wait: ~750ms
+        for attempt in 0..5 {
+            if attempt > 0 {
+                let delay_ms = attempt * 50;
+                log::debug!("Retry attempt {} after {}ms delay", attempt, delay_ms);
+                thread::sleep(Duration::from_millis(delay_ms as u64));
+            }
+            
+            if let Some(screenshot) = Self::find_screenshot_for_game(game_path) {
+                if attempt > 0 {
+                    log::info!("Screenshot found on retry attempt {}", attempt);
+                }
+                return Some(screenshot);
+            }
+        }
+        
+        log::warn!("No screenshot found after retries for: {:?}", game_path);
+        None
     }
 
     /// Find the most recent screenshot that matches the given game path

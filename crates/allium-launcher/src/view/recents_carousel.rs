@@ -184,18 +184,54 @@ impl RecentsCarousel {
             .collect())
     }
 
+    // Append a line to a log file on the SD card root for easier debugging after eject
+    fn sd_log_line(&self, line: &str) {
+        use std::io::Write;
+        use std::time::{SystemTime, UNIX_EPOCH};
+
+        // Prefer ALLIUM_SD_ROOT if available, otherwise /mnt/SDCARD
+        let base = common::constants::ALLIUM_SD_ROOT.clone();
+        let log_path = base.join("allium-recents.log");
+
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_path)
+        {
+            let ts = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or_default();
+            let _ = writeln!(f, "{}: {}", ts, line);
+        }
+    }
+
     fn update_current_game(&mut self) -> Result<()> {
         if self.games.is_empty() {
             self.screenshot.set_path(None);
             self.game_name.set_text(String::new());
             self.counter_label.set_text(String::new());
+            log::debug!("RecentsCarousel: No games to display");
             return Ok(());
         }
 
         let game = &self.games[self.selected];
+        log::info!(
+            "RecentsCarousel: Updating to game {}/{}: '{}' at path: {:?}, core: {:?}",
+            self.selected + 1,
+            self.games.len(),
+            game.name,
+            game.path,
+            game.core
+        );
 
         // Update screenshot path
         let screenshot_path = self.get_screenshot_path(game);
+        if screenshot_path.is_some() {
+            log::info!("RecentsCarousel: Screenshot found for: {}", game.name);
+        } else {
+            log::warn!("RecentsCarousel: No screenshot available for: {}", game.name);
+        }
         self.screenshot.set_path(screenshot_path);
 
         // Update game name
@@ -210,22 +246,97 @@ impl RecentsCarousel {
     }
 
     fn get_screenshot_path(&self, game: &Game) -> Option<PathBuf> {
-        // Generate hash-based screenshot path similar to Allium's system
-        let mut hasher = Sha256::new();
-        hasher.update(game.path.to_string_lossy().as_bytes());
-        if let Some(core) = &game.core {
-            hasher.update(core.as_bytes());
+        use std::fs::OpenOptions;
+        use std::io::Write;
+
+        // Try to open a human-readable log on the SD card root so we can inspect later
+        let mut log_file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("/mnt/SDCARD/allium-recents.log")
+            .ok();
+
+        if let Some(ref mut f) = log_file {
+            writeln!(f, "\n=== Looking for screenshot for: {} ===", game.name).ok();
+            writeln!(f, "Game path (raw): {:?}", game.path).ok();
+            writeln!(f, "Game core: {:?}", game.core).ok();
         }
-        hasher.update((-1i8).to_le_bytes()); // Auto-save slot
+
+        // Canonicalize the game path when possible; hashing must match the code that created the screenshot
+        let canonical_path = std::fs::canonicalize(&game.path).ok();
+        let path_str = canonical_path
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|| game.path.to_string_lossy().to_string());
+
+        if let Some(ref mut f) = log_file {
+            writeln!(f, "Canonicalized path used for hashing: {}", path_str).ok();
+        }
+
+        // List available screenshots (debug)
+        if let Ok(entries) = std::fs::read_dir(&*ALLIUM_SCREENSHOTS_DIR) {
+            if let Some(ref mut f) = log_file {
+                writeln!(f, "Available screenshots in {:?}:", &*ALLIUM_SCREENSHOTS_DIR).ok();
+            }
+            for entry in entries.filter_map(|e| e.ok()) {
+                if let Some(name) = entry.file_name().into_string().ok() {
+                    if let Some(ref mut f) = log_file {
+                        writeln!(f, "  - {}", name).ok();
+                    }
+                }
+            }
+        } else if let Some(ref mut f) = log_file {
+            writeln!(f, "Could not read screenshots dir: {:?}", &*ALLIUM_SCREENSHOTS_DIR).ok();
+        }
+
+        // Try with core first (newer format)
+        if let Some(core) = &game.core {
+            let mut hasher = Sha256::new();
+            hasher.update(path_str.as_bytes());
+            hasher.update(core.as_bytes());
+            hasher.update(&(-1i8).to_le_bytes());
+            let hash = hasher.finalize();
+            let base32 = base32::encode(base32::Alphabet::Crockford, &hash);
+            let screenshot_path = ALLIUM_SCREENSHOTS_DIR.join(format!("{}.png", base32));
+
+            if let Some(ref mut f) = log_file {
+                writeln!(f, "Trying WITH core '{}': {} -> {:?}", core, base32, screenshot_path).ok();
+            }
+
+            if screenshot_path.exists() {
+                log::info!("Found screenshot (with core) for {}: {:?}", game.name, screenshot_path);
+                if let Some(ref mut f) = log_file {
+                    writeln!(f, "FOUND (with core): {:?}", screenshot_path).ok();
+                }
+                return Some(screenshot_path);
+            }
+        }
+
+        // Try without core (older format)
+        let mut hasher = Sha256::new();
+        hasher.update(path_str.as_bytes());
+        hasher.update(&(-1i8).to_le_bytes());
         let hash = hasher.finalize();
         let base32 = base32::encode(base32::Alphabet::Crockford, &hash);
         let screenshot_path = ALLIUM_SCREENSHOTS_DIR.join(format!("{}.png", base32));
 
-        if screenshot_path.exists() {
-            Some(screenshot_path)
-        } else {
-            None
+        if let Some(ref mut f) = log_file {
+            writeln!(f, "Trying WITHOUT core: {} -> {:?}", base32, screenshot_path).ok();
         }
+
+        if screenshot_path.exists() {
+            log::info!("Found screenshot (without core) for {}: {:?}", game.name, screenshot_path);
+            if let Some(ref mut f) = log_file {
+                writeln!(f, "FOUND (without core): {:?}", screenshot_path).ok();
+            }
+            return Some(screenshot_path);
+        }
+
+        if let Some(ref mut f) = log_file {
+            writeln!(f, "No screenshot found for {}", game.name).ok();
+        }
+
+        None
     }
 
     pub fn save(&self) -> RecentsCarouselState {

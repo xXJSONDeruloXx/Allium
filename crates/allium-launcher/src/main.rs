@@ -14,7 +14,11 @@ use simple_logger::SimpleLogger;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    SimpleLogger::new().env().init().unwrap();
+    SimpleLogger::new()
+        .with_level(log::LevelFilter::Debug)
+        .env()
+        .init()
+        .unwrap();
 
     let platform = DefaultPlatform::new()?;
     let mut app = AlliumLauncher::new(platform)?;

@@ -58,6 +58,7 @@ settings-theme-dark-mode = Modul întunecat
 settings-theme-show-battery-level = Procentajul bateriei
 settings-theme-show-clock = Ceas
 settings-theme-use-recents-carousel = Carusel Recente
+settings-theme-boxart-width = Lățime Boxart
 settings-theme-ui-font = Font UI
 settings-theme-ui-font-size = Dimensiune Font UI
 settings-theme-guide-font = Font Ghid

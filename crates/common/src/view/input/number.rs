@@ -20,6 +20,7 @@ where
     value: i32,
     min: i32,
     max: i32,
+    step: i32,
     formatter: Formatter,
     label: Label<String>,
     edit_state: Option<i32>,
@@ -34,6 +35,7 @@ where
         value: i32,
         min: i32,
         max: i32,
+        step: i32,
         formatter: Formatter,
         alignment: Alignment,
     ) -> Self {
@@ -49,6 +51,7 @@ where
             value,
             min,
             max,
+            step,
             formatter,
             label,
             edit_state: None,
@@ -105,12 +108,12 @@ where
                     return Ok(true);
                 }
                 KeyEvent::Pressed(Key::Left) | KeyEvent::Autorepeat(Key::Left) => {
-                    *value = (*value - 5).clamp(self.min, self.max);
+                    *value = (*value - self.step).clamp(self.min, self.max);
                     self.label.set_text((self.formatter)(value));
                     return Ok(true);
                 }
                 KeyEvent::Pressed(Key::Right) | KeyEvent::Autorepeat(Key::Right) => {
-                    *value = (*value + 5).clamp(self.min, self.max);
+                    *value = (*value + self.step).clamp(self.min, self.max);
                     self.label.set_text((self.formatter)(value));
                     return Ok(true);
                 }

@@ -54,6 +54,7 @@ impl Power {
                     power_settings.auto_sleep_duration_minutes,
                     0,
                     60,
+                    5,
                     move |x: &i32| {
                         if *x == 0 {
                             auto_sleep_duration_disabled_label.clone()

@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use anyhow::Result;
 use async_trait::async_trait;
 use common::command::Command;
-use common::constants::{IMAGE_WIDTH, SELECTION_MARGIN};
+use common::constants::SELECTION_MARGIN;
 use common::database::Database;
 use common::display::Display;
 use common::geom::{Alignment, Point, Rect};
@@ -66,7 +66,11 @@ where
             Rect::new(
                 x + 12,
                 y + 8,
-                w - IMAGE_WIDTH - 12 - 12 - 24,
+                if styles.enable_box_art {
+                    w - styles.boxart_width - 12 - 12 - 24
+                } else {
+                    w - 12 - 12
+                },
                 h - 8 - ButtonIcon::diameter(&styles) - 8,
             ),
             Vec::new(),
@@ -76,9 +80,9 @@ where
 
         let mut image = Image::empty(
             Rect::new(
-                x + w as i32 - IMAGE_WIDTH as i32 - 24,
+                x + w as i32 - styles.boxart_width as i32 - 24,
                 y + 8,
-                IMAGE_WIDTH,
+                styles.boxart_width,
                 h - 8 - 8 - 8 - ButtonIcon::diameter(&styles) - 8,
             ),
             ImageMode::Contain,

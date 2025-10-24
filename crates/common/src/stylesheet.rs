@@ -131,6 +131,8 @@ pub struct Stylesheet {
     pub show_clock: bool,
     #[serde(default)]
     pub use_recents_carousel: bool,
+    #[serde(default = "Stylesheet::default_boxart_width")]
+    pub boxart_width: u32,
     #[serde(default = "Stylesheet::default_foreground_color")]
     pub foreground_color: Color,
     #[serde(default = "Stylesheet::default_background_color")]
@@ -324,6 +326,11 @@ rgui_particle_color = "0xFF{highlight:X}"
     }
 
     #[inline]
+    fn default_boxart_width() -> u32 {
+        250
+    }
+
+    #[inline]
     fn default_foreground_color() -> Color {
         Color::new(255, 255, 255)
     }
@@ -432,6 +439,7 @@ impl Default for Stylesheet {
             show_battery_level: false,
             show_clock: true,
             use_recents_carousel: false,
+            boxart_width: Self::default_boxart_width(),
             foreground_color: Self::default_foreground_color(),
             background_color: Self::default_background_color(),
             highlight_color: Self::default_highlight_color(),

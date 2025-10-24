@@ -58,6 +58,7 @@ settings-theme-dark-mode = 暗黑模式
 settings-theme-show-battery-level = 显示电量
 settings-theme-show-clock = 时钟
 settings-theme-use-recents-carousel = 最近轮播
+settings-theme-boxart-width = 封面宽度
 settings-theme-ui-font = UI字体
 settings-theme-ui-font-size = UI字体大小
 settings-theme-guide-font = 指南字体

@@ -58,6 +58,7 @@ impl Theme {
                 locale.t("settings-theme-show-battery-level"),
                 locale.t("settings-theme-show-clock"),
                 locale.t("settings-theme-use-recents-carousel"),
+                locale.t("settings-theme-boxart-width"),
                 locale.t("settings-theme-ui-font"),
                 locale.t("settings-theme-ui-font-size"),
                 locale.t("settings-theme-guide-font"),
@@ -97,6 +98,21 @@ impl Theme {
                     stylesheet.use_recents_carousel,
                     Alignment::Right,
                 )),
+                Box::new(Number::new(
+                    Point::zero(),
+                    stylesheet.boxart_width as i32,
+                    0,
+                    400,
+                    10,
+                    |px| {
+                        if *px == 0 {
+                            "Disabled".to_owned()
+                        } else {
+                            format!("{}px", px)
+                        }
+                    },
+                    Alignment::Right,
+                )),
                 Box::new(Select::new(
                     Point::zero(),
                     fonts
@@ -111,6 +127,7 @@ impl Theme {
                     stylesheet.ui_font.size as i32,
                     20,
                     60,
+                    5,
                     i32::to_string,
                     Alignment::Right,
                 )),
@@ -128,6 +145,7 @@ impl Theme {
                     stylesheet.guide_font.size as i32,
                     20,
                     60,
+                    5,
                     i32::to_string,
                     Alignment::Right,
                 )),
@@ -368,37 +386,38 @@ impl View for Theme {
                             self.stylesheet.use_recents_carousel =
                                 !self.stylesheet.use_recents_carousel
                         }
-                        4 => self
+                        4 => self.stylesheet.boxart_width = val.as_int().unwrap() as u32,
+                        5 => self
                             .stylesheet
                             .ui_font
                             .path
                             .clone_from(&self.fonts[val.as_int().unwrap() as usize]),
-                        5 => self.stylesheet.ui_font.size = val.as_int().unwrap() as u32,
-                        6 => self
+                        6 => self.stylesheet.ui_font.size = val.as_int().unwrap() as u32,
+                        7 => self
                             .stylesheet
                             .guide_font
                             .path
                             .clone_from(&self.fonts[val.as_int().unwrap() as usize]),
-                        7 => self.stylesheet.guide_font.size = val.as_int().unwrap() as u32,
-                        8 => self.stylesheet.tab_font_size = val.as_int().unwrap() as f32 / 100.0,
-                        9 => {
+                        8 => self.stylesheet.guide_font.size = val.as_int().unwrap() as u32,
+                        9 => self.stylesheet.tab_font_size = val.as_int().unwrap() as f32 / 100.0,
+                        10 => {
                             self.stylesheet.status_bar_font_size =
                                 val.as_int().unwrap() as f32 / 100.0
                         }
-                        10 => {
+                        11 => {
                             self.stylesheet.button_hint_font_size =
                                 val.as_int().unwrap() as f32 / 100.0
                         }
-                        11 => self.stylesheet.highlight_color = val.as_color().unwrap(),
-                        12 => self.stylesheet.foreground_color = val.as_color().unwrap(),
-                        13 => self.stylesheet.background_color = val.as_color().unwrap(),
-                        14 => self.stylesheet.disabled_color = val.as_color().unwrap(),
-                        15 => self.stylesheet.tab_color = val.as_color().unwrap(),
-                        16 => self.stylesheet.tab_selected_color = val.as_color().unwrap(),
-                        17 => self.stylesheet.button_a_color = val.as_color().unwrap(),
-                        18 => self.stylesheet.button_b_color = val.as_color().unwrap(),
-                        19 => self.stylesheet.button_x_color = val.as_color().unwrap(),
-                        20 => self.stylesheet.button_y_color = val.as_color().unwrap(),
+                        12 => self.stylesheet.highlight_color = val.as_color().unwrap(),
+                        13 => self.stylesheet.foreground_color = val.as_color().unwrap(),
+                        14 => self.stylesheet.background_color = val.as_color().unwrap(),
+                        15 => self.stylesheet.disabled_color = val.as_color().unwrap(),
+                        16 => self.stylesheet.tab_color = val.as_color().unwrap(),
+                        17 => self.stylesheet.tab_selected_color = val.as_color().unwrap(),
+                        18 => self.stylesheet.button_a_color = val.as_color().unwrap(),
+                        19 => self.stylesheet.button_b_color = val.as_color().unwrap(),
+                        20 => self.stylesheet.button_x_color = val.as_color().unwrap(),
+                        21 => self.stylesheet.button_y_color = val.as_color().unwrap(),
                         _ => unreachable!("Invalid index"),
                     }
 

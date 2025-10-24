@@ -58,6 +58,7 @@ settings-theme-dark-mode = Mode Gelap
 settings-theme-show-battery-level = Persentase Baterai
 settings-theme-show-clock = Jam
 settings-theme-use-recents-carousel = Korsel terakhir
+settings-theme-boxart-width = Lebar boxart
 settings-theme-ui-font = Huruf sistem
 settings-theme-ui-font-size = Ukuran huruf
 settings-theme-guide-font = Huruf di Panduan

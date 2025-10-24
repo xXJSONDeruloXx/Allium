@@ -58,6 +58,7 @@ settings-theme-dark-mode = Mode sombre
 settings-theme-show-battery-level = Pourcentage de batterie
 settings-theme-show-clock = Horloge
 settings-theme-use-recents-carousel = Carrousel des récents
+settings-theme-boxart-width = Largeur de la pochette
 settings-theme-ui-font = UI: Police
 settings-theme-ui-font-size = UI: Taille de police
 settings-theme-guide-font = Guide: Police

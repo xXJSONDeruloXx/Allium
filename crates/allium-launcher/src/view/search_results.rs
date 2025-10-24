@@ -26,13 +26,12 @@ use crate::view::entry_list::{EntryList, EntryListState};
 
 pub type SearchResultsState = EntryListState<SearchResultsSort>;
 
-/// Sort modes for search results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchResultsSort {
-    Relevance(String),    // Database order (default relevance)
-    Alphabetical(String), // A-Z by game name
-    LastPlayed(String),   // Most recently played first
-    MostPlayed(String),   // Highest play count first
+    Relevance(String),
+    Alphabetical(String),
+    LastPlayed(String),
+    MostPlayed(String),
 }
 
 impl SearchResultsSort {
@@ -69,7 +68,6 @@ impl Sort for SearchResultsSort {
     }
 
     fn with_directory(&self, _directory: Directory) -> Self {
-        // Search results don't use directories
         self.clone()
     }
 
@@ -81,13 +79,10 @@ impl Sort for SearchResultsSort {
     ) -> Result<Vec<Entry>> {
         let query = self.query();
 
-        // Get search results from database
         let mut games = database.search(query, RECENT_GAMES_LIMIT)?;
 
-        // Apply additional sorting if needed
         match self {
             SearchResultsSort::Relevance(_) => {
-                // Database already returns in relevance order
             }
             SearchResultsSort::Alphabetical(_) => {
                 games.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
@@ -100,7 +95,6 @@ impl Sort for SearchResultsSort {
             }
         }
 
-        // Convert to Entry::Game
         Ok(games
             .into_iter()
             .map(|game| {
@@ -138,13 +132,6 @@ impl Sort for SearchResultsSort {
     }
 }
 
-/// Standalone search results view
-///
-/// Displays search results with sorting and allows:
-/// - A: Launch selected game
-/// - B: Go back to previous view
-/// - Y: Cycle sort mode
-/// - X: Edit search query
 #[derive(Debug)]
 pub struct SearchResultsView {
     rect: Rect,
@@ -162,22 +149,19 @@ impl SearchResultsView {
         let Rect { x, y, w, h } = rect;
         let styles = res.get::<Stylesheet>();
 
-        // Get result count first
         let entry_count = {
             let database = res.get::<Database>();
             let games = database.search(&query, RECENT_GAMES_LIMIT)?;
             games.len()
         };
 
-        // Create entry list for games
         let sort = SearchResultsSort::Relevance(query.clone());
         let list = EntryList::new(
-            Rect::new(x, y + 72, w, h - 72), // Leave more space for header (was 48, now 72)
+            Rect::new(x, y + 72, w, h - 72),
             res.clone(),
             sort,
         )?;
 
-        // Format result count text
         let result_text = {
             let locale = res.get::<Locale>();
             if entry_count == 0 {
@@ -194,7 +178,6 @@ impl SearchResultsView {
             }
         };
 
-        // Header showing search query
         let header = Label::new(
             Point::new(x + 12, y + 8),
             format!("Search: {}", query),
@@ -202,7 +185,6 @@ impl SearchResultsView {
             Some(w - 24),
         );
 
-        // Result count label (more spacing from header)
         let result_count = Label::new(
             Point::new(x + 12, y + 36),
             result_text,
@@ -210,7 +192,6 @@ impl SearchResultsView {
             Some(w - 24),
         );
 
-        // Button hints
         let button_hints = Row::new(
             Point::new(
                 x + w as i32 - 12,
@@ -271,7 +252,6 @@ impl SearchResultsView {
         self.list.save()
     }
 
-    #[allow(dead_code)] // Reserved for future state restoration
     pub fn load_or_new(
         rect: Rect,
         res: Resources,
@@ -281,27 +261,23 @@ impl SearchResultsView {
             let query = state.sort.query().to_string();
             let list = EntryList::load(rect, res.clone(), state)?;
 
-            // Recreate the view with the loaded list
             let mut view = Self::new(rect, res, query)?;
             view.list = list;
             Ok(view)
         } else {
-            // Default to empty search
             Self::new(rect, res, String::new())
         }
     }
 
-    #[allow(dead_code)] // May be useful for query-based operations
+    // #[allow(dead_code)]
     pub fn query(&self) -> &str {
         &self.query
     }
 
-    /// Update search query and reload results
     pub fn update_query(&mut self, new_query: String) -> Result<()> {
         self.query = new_query.clone();
         self.header.set_text(format!("🔍 {}", new_query));
 
-        // Update list with new query and get result count
         let database = self.res.get::<Database>();
         let games = database.search(&new_query, RECENT_GAMES_LIMIT)?;
         let entry_count = games.len();
@@ -309,7 +285,6 @@ impl SearchResultsView {
         let sort = SearchResultsSort::Relevance(new_query);
         self.list.sort(sort)?;
 
-        // Update result count text
         let result_text = if entry_count == 0 {
             self.res.get::<Locale>().t("no-search-results")
         } else if entry_count == 1 {
@@ -337,13 +312,10 @@ impl View for SearchResultsView {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        // Only redraw background when header, result_count, or initial draw needs it
         let needs_full_redraw = self.header.should_draw() || self.result_count.should_draw();
         
         if needs_full_redraw {
-            // Draw solid background to cover content behind
-            // Leave space for button hints at bottom
-            let button_hint_height = ButtonIcon::diameter(styles) + 16; // Icon + padding
+            let button_hint_height = ButtonIcon::diameter(styles) + 16;
             let background_rect = Rectangle::new(
                 embedded_graphics::prelude::Point::new(self.rect.x, self.rect.y),
                 embedded_graphics::prelude::Size::new(
@@ -354,24 +326,19 @@ impl View for SearchResultsView {
             display.fill_solid(&background_rect, styles.background_color)?;
             drawn = true;
             
-            // After clearing background, everything needs to redraw
             self.header.set_should_draw();
             self.result_count.set_should_draw();
             self.list.set_should_draw();
             self.button_hints.set_should_draw();
         }
 
-        // Draw header and result count
         drawn |= self.header.should_draw() && self.header.draw(display, styles)?;
         drawn |= self.result_count.should_draw() && self.result_count.draw(display, styles)?;
 
-        // Draw list
         drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
 
-        // Draw button hints
         drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
 
-        // Draw search overlay if editing query
         drawn |= self.search_view.draw(display, styles)?;
 
         Ok(drawn)
@@ -399,14 +366,12 @@ impl View for SearchResultsView {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        // If editing search query, let SearchView handle it
         if self.search_view.is_active() {
             if self
                 .search_view
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
             {
-                // Check if we got a new search query from the bubble
                 for cmd in bubble.iter() {
                     if let Command::Search(new_query) = cmd {
                         self.update_query(new_query.clone())?;
@@ -418,21 +383,17 @@ impl View for SearchResultsView {
             }
         }
 
-        // Handle our own keys
         match event {
             KeyEvent::Pressed(Key::B) => {
-                // Go back to previous view - add to bubble so app can handle it
                 bubble.push_back(Command::CloseView);
                 Ok(true)
             }
             KeyEvent::Pressed(Key::X) => {
-                // Edit search query
                 self.search_view.activate_with_value(self.query.clone());
                 commands.send(Command::Redraw).await?;
                 Ok(true)
             }
             _ => {
-                // Let list handle everything else (navigation, selection, sorting)
                 self.list.handle_key_event(event, commands, bubble).await
             }
         }

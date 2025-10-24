@@ -34,7 +34,6 @@ struct AppState {
     apps: AppsState,
     settings: SettingsState,
     #[serde(skip)]
-    #[allow(dead_code)] // Used in save() method
     search_results: Option<SearchResultsState>,
 }
 

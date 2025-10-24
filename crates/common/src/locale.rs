@@ -14,7 +14,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::constants::{ALLIUM_LOCALE_SETTINGS, ALLIUM_LOCALES_DIR};
 
-// Re-export for use in other crates
 pub use fluent_templates::fluent_bundle::FluentValue as LocaleFluentValue;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

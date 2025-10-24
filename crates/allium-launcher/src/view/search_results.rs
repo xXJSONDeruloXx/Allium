@@ -172,7 +172,7 @@ impl SearchResultsView {
         // Create entry list for games
         let sort = SearchResultsSort::Relevance(query.clone());
         let list = EntryList::new(
-            Rect::new(x, y + 48, w, h - 48), // Leave space for header
+            Rect::new(x, y + 72, w, h - 72), // Leave more space for header (was 48, now 72)
             res.clone(),
             sort,
         )?;
@@ -202,9 +202,9 @@ impl SearchResultsView {
             Some(w - 24),
         );
 
-        // Result count label
+        // Result count label (more spacing from header)
         let result_count = Label::new(
-            Point::new(x + 12, y + 28),
+            Point::new(x + 12, y + 36),
             result_text,
             Alignment::Left,
             Some(w - 24),
@@ -337,9 +337,12 @@ impl View for SearchResultsView {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        // Draw solid background to cover content behind
-        // Leave space for button hints at bottom
-        if self.should_draw() {
+        // Only redraw background when header, result_count, or initial draw needs it
+        let needs_full_redraw = self.header.should_draw() || self.result_count.should_draw();
+        
+        if needs_full_redraw {
+            // Draw solid background to cover content behind
+            // Leave space for button hints at bottom
             let button_hint_height = ButtonIcon::diameter(styles) + 16; // Icon + padding
             let background_rect = Rectangle::new(
                 embedded_graphics::prelude::Point::new(self.rect.x, self.rect.y),
@@ -350,23 +353,20 @@ impl View for SearchResultsView {
             );
             display.fill_solid(&background_rect, styles.background_color)?;
             drawn = true;
+            
+            // After clearing background, everything needs to redraw
+            self.header.set_should_draw();
+            self.result_count.set_should_draw();
+            self.list.set_should_draw();
+            self.button_hints.set_should_draw();
         }
 
         // Draw header and result count
-        if self.header.should_draw() {
-            drawn |= self.header.draw(display, styles)?;
-        }
-        if self.result_count.should_draw() {
-            drawn |= self.result_count.draw(display, styles)?;
-        }
+        drawn |= self.header.should_draw() && self.header.draw(display, styles)?;
+        drawn |= self.result_count.should_draw() && self.result_count.draw(display, styles)?;
 
         // Draw list
-        if self.list.should_draw() {
-            drawn |= self.list.draw(display, styles)?;
-            if drawn {
-                self.button_hints.set_should_draw();
-            }
-        }
+        drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
 
         // Draw button hints
         drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;

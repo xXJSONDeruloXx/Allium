@@ -270,6 +270,10 @@ where
 
     pub fn close_search_results(&mut self) {
         self.search_results = None;
+        // Deactivate search keyboard in recents view if we're on that tab
+        if self.selected == 0 {
+            self.views.0.close_search();
+        }
         self.set_should_draw();
     }
 

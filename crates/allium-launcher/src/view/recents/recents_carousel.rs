@@ -180,6 +180,11 @@ impl RecentsCarousel {
         self.search_view.activate();
     }
 
+    pub fn close_search(&mut self) {
+        self.search_view.deactivate();
+        self.set_should_draw();
+    }
+
     pub fn save(&self) -> RecentsCarouselState {
         RecentsCarouselState { selected: 0 }
     }
@@ -223,36 +228,39 @@ impl View for RecentsCarousel {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        if self.dirty {
-            display.load(self.rect)?;
-            self.dirty = false;
-            drawn = true;
-        }
-
-        if self.screenshot.should_draw() {
-            drawn |= self.screenshot.draw(display, styles)?;
-        }
-
-        if self.games.is_empty() {
-            let locale = self.res.get::<Locale>();
-            let mut empty_label = Label::new(
-                Point::new(
-                    self.rect.x + self.rect.w as i32 / 2,
-                    self.rect.y + self.rect.h as i32 / 2,
-                ),
-                locale.t("no-recent-games"),
-                Alignment::Center,
-                None,
-            );
-            drawn |= empty_label.draw(display, styles)?;
-        } else {
-            if self.game_name.should_draw() {
-                drawn |= self.game_name.draw(display, styles)?;
+        // Only draw carousel content if search is not active
+        if !self.search_view.is_active() {
+            if self.dirty {
+                display.load(self.rect)?;
+                self.dirty = false;
+                drawn = true;
             }
-        }
 
-        if self.button_hints.should_draw() {
-            drawn |= self.button_hints.draw(display, styles)?;
+            if self.screenshot.should_draw() {
+                drawn |= self.screenshot.draw(display, styles)?;
+            }
+
+            if self.games.is_empty() {
+                let locale = self.res.get::<Locale>();
+                let mut empty_label = Label::new(
+                    Point::new(
+                        self.rect.x + self.rect.w as i32 / 2,
+                        self.rect.y + self.rect.h as i32 / 2,
+                    ),
+                    locale.t("no-recent-games"),
+                    Alignment::Center,
+                    None,
+                );
+                drawn |= empty_label.draw(display, styles)?;
+            } else {
+                if self.game_name.should_draw() {
+                    drawn |= self.game_name.draw(display, styles)?;
+                }
+            }
+
+            if self.button_hints.should_draw() {
+                drawn |= self.button_hints.draw(display, styles)?;
+            }
         }
 
         // Draw search overlay if active

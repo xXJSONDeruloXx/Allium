@@ -87,6 +87,11 @@ impl RecentsList {
     pub fn start_search(&mut self) {
         self.search_view.activate();
     }
+
+    pub fn close_search(&mut self) {
+        self.search_view.deactivate();
+        self.set_should_draw();
+    }
 }
 
 #[async_trait(?Send)]
@@ -98,11 +103,14 @@ impl View for RecentsList {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        if self.list.should_draw() {
-            drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
-            self.button_hints.set_should_draw();
+        // Only draw list content if search is not active
+        if !self.search_view.is_active() {
+            if self.list.should_draw() {
+                drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
+                self.button_hints.set_should_draw();
+            }
+            drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
         }
-        drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
 
         // Draw search overlay if active
         drawn |= self.search_view.draw(display, styles)?;

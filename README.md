@@ -140,3 +140,4 @@ Allium is only possible thanks to the Miyoo Mini community, including but not li
 - shauninman: Allium is heavily inspired by [MiniUI](https://github.com/shauninman/MiniUI)'s simplicity and clean design
 - [steward-fu](https://github.com/steward-fu): miraculous DraStic port
 - Early adopters and testers of Allium
+- [Icons8.com](icons8.com) for the icons used in the wiki.

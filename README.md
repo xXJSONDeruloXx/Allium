@@ -33,6 +33,8 @@ Please refer to this README.md and the [Wiki](https://github.com/goweiwen/Allium
 
 Allium supports both the Miyoo Mini, Miyoo Mini Plus,and Miyoo Mini Flip on the same SD card.
 
+[Check out the wiki page for a more detailed set of instructions.](https://github.com/goweiwen/Allium/wiki/1.-Installation-Instructions)
+
 ### First Install
 1. Format the SD card to [FAT32](https://github.com/anzz1/DotUI-X/wiki/fat32format).
 2. Download the latest release and extract into your SD card. e.g. `E:/`.

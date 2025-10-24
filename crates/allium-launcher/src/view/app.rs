@@ -414,7 +414,11 @@ where
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        vec![&self.status_bar, self.view(), &self.tabs]
+        let mut children: Vec<&dyn View> = vec![&self.status_bar, self.view(), &self.tabs];
+        if let Some(search_results) = &self.search_results {
+            children.push(search_results);
+        }
+        children
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
@@ -425,7 +429,11 @@ where
             3 => &mut self.views.3,
             _ => unreachable!(),
         };
-        vec![&mut self.status_bar, view, &mut self.tabs]
+        let mut children: Vec<&mut dyn View> = vec![&mut self.status_bar, view, &mut self.tabs];
+        if let Some(search_results) = &mut self.search_results {
+            children.push(search_results);
+        }
+        children
     }
 
     fn bounding_box(&mut self, _styles: &Stylesheet) -> Rect {

@@ -102,7 +102,7 @@ impl Image {
                 if image.width() == rect.w && image.height() == rect.h {
                     image.to_rgba8()
                 } else {
-                    imageops::resize(&image, rect.w, rect.h, imageops::FilterType::Nearest)
+                    imageops::resize(&image, rect.w, rect.h, imageops::FilterType::Lanczos3)
                 }
             }
             ImageMode::Contain => {
@@ -111,7 +111,12 @@ impl Image {
                 } else {
                     let new_height = rect.h.min(rect.w * image.height() / image.width());
                     let new_width = rect.w.min(rect.h * image.width() / image.height());
-                    imageops::resize(&image, new_width, new_height, imageops::FilterType::Nearest)
+                    imageops::resize(
+                        &image,
+                        new_width,
+                        new_height,
+                        imageops::FilterType::Lanczos3,
+                    )
                 }
             }
         };

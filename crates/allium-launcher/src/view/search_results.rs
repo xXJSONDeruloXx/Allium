@@ -12,6 +12,8 @@ use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
 use common::view::{ButtonHint, ButtonIcon, Label, Row, SearchView, View};
+use embedded_graphics::prelude::*;
+use embedded_graphics::primitives::Rectangle;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -334,6 +336,16 @@ impl View for SearchResultsView {
         styles: &Stylesheet,
     ) -> Result<bool> {
         let mut drawn = false;
+
+        // Draw solid background to cover content behind
+        if self.should_draw() {
+            let background_rect = Rectangle::new(
+                embedded_graphics::prelude::Point::new(self.rect.x, self.rect.y),
+                embedded_graphics::prelude::Size::new(self.rect.w, self.rect.h),
+            );
+            display.fill_solid(&background_rect, styles.background_color)?;
+            drawn = true;
+        }
 
         // Draw header and result count
         if self.header.should_draw() {

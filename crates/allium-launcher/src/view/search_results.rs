@@ -6,6 +6,7 @@ use async_trait::async_trait;
 use common::command::Command;
 use common::constants::RECENT_GAMES_LIMIT;
 use common::database::Database;
+use common::display::Display;
 use common::geom::{Alignment, Point, Rect};
 use common::locale::{Locale, LocaleFluentValue};
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
@@ -82,8 +83,7 @@ impl Sort for SearchResultsSort {
         let mut games = database.search(query, RECENT_GAMES_LIMIT)?;
 
         match self {
-            SearchResultsSort::Relevance(_) => {
-            }
+            SearchResultsSort::Relevance(_) => {}
             SearchResultsSort::Alphabetical(_) => {
                 games.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
             }
@@ -137,6 +137,7 @@ pub struct SearchResultsView {
     rect: Rect,
     res: Resources,
     query: String,
+    current_sort: SearchResultsSort,
     list: EntryList<SearchResultsSort>,
     header: Label<String>,
     result_count: Label<String>,
@@ -156,11 +157,7 @@ impl SearchResultsView {
         };
 
         let sort = SearchResultsSort::Relevance(query.clone());
-        let list = EntryList::new(
-            Rect::new(x, y + 72, w, h - 72),
-            res.clone(),
-            sort,
-        )?;
+        let list = EntryList::new(Rect::new(x, y + 72, w, h - 72), res.clone(), sort.clone())?;
 
         let result_text = {
             let locale = res.get::<Locale>();
@@ -204,7 +201,7 @@ impl SearchResultsView {
                         res.clone(),
                         Point::zero(),
                         Key::A,
-                        locale.t("button-launch"),
+                        locale.t("button-select"),
                         Alignment::Right,
                     ),
                     ButtonHint::new(
@@ -218,7 +215,7 @@ impl SearchResultsView {
                         res.clone(),
                         Point::zero(),
                         Key::Y,
-                        locale.t("button-sort"),
+                        sort.button_hint(&locale),
                         Alignment::Right,
                     ),
                     ButtonHint::new(
@@ -240,6 +237,7 @@ impl SearchResultsView {
             rect,
             res: res.clone(),
             query,
+            current_sort: sort,
             list,
             header,
             result_count,
@@ -277,12 +275,16 @@ impl SearchResultsView {
         self.query = new_query.clone();
         self.header.set_text(format!("🔍 {}", new_query));
 
-        let database = self.res.get::<Database>();
-        let games = database.search(&new_query, RECENT_GAMES_LIMIT)?;
-        let entry_count = games.len();
+        let entry_count = {
+            let database = self.res.get::<Database>();
+            let games = database.search(&new_query, RECENT_GAMES_LIMIT)?;
+            games.len()
+        };
 
         let sort = SearchResultsSort::Relevance(new_query);
+        self.current_sort = sort.clone();
         self.list.sort(sort)?;
+        self.update_sort_button_hint();
 
         let result_text = if entry_count == 0 {
             self.res.get::<Locale>().t("no-search-results")
@@ -300,6 +302,12 @@ impl SearchResultsView {
 
         Ok(())
     }
+
+    fn update_sort_button_hint(&mut self) {
+        let locale = self.res.get::<Locale>();
+        let sort_text = self.current_sort.button_hint(&locale);
+        self.button_hints.get_mut(2).unwrap().set_text(sort_text);
+    }
 }
 
 #[async_trait(?Send)]
@@ -312,7 +320,7 @@ impl View for SearchResultsView {
         let mut drawn = false;
 
         let needs_full_redraw = self.header.should_draw() || self.result_count.should_draw();
-        
+
         if needs_full_redraw {
             let button_hint_height = ButtonIcon::diameter(styles) + 16;
             let background_rect = Rectangle::new(
@@ -324,7 +332,7 @@ impl View for SearchResultsView {
             );
             display.fill_solid(&background_rect, styles.background_color)?;
             drawn = true;
-            
+
             self.header.set_should_draw();
             self.result_count.set_should_draw();
             self.list.set_should_draw();
@@ -336,8 +344,21 @@ impl View for SearchResultsView {
 
         drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
 
-        drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
+        if self.button_hints.should_draw() {
+            display.load(Rect::new(
+                0,
+                display.size().height as i32 - 48,
+                display.size().width,
+                48,
+            ))?;
+            self.button_hints.set_should_draw();
+            drawn |= self.button_hints.draw(display, styles)?;
+        }
 
+        if self.search_view.is_active() {
+            display.load(self.rect)?;
+            self.search_view.set_should_draw();
+        }
         drawn |= self.search_view.draw(display, styles)?;
 
         Ok(drawn)
@@ -392,9 +413,17 @@ impl View for SearchResultsView {
                 commands.send(Command::Redraw).await?;
                 Ok(true)
             }
-            _ => {
-                self.list.handle_key_event(event, commands, bubble).await
+            KeyEvent::Pressed(Key::Y) => {
+                if self.list.handle_key_event(event, commands, bubble).await? {
+                    self.current_sort = self.current_sort.next();
+                    self.update_sort_button_hint();
+                    self.button_hints.set_should_draw();
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
             }
+            _ => self.list.handle_key_event(event, commands, bubble).await,
         }
     }
 

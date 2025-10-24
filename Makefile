@@ -6,6 +6,8 @@ TOOLCHAIN := mholdg16/miyoomini-toolchain:latest
 
 CROSS_TARGET_TRIPLE := arm-unknown-linux-gnueabihf
 
+-include local.mk
+
 PLATFORM := $(shell uname -m)
 ifeq ($(PLATFORM),arm64)
   export CROSS_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_IMAGE_TOOLCHAIN = aarch64-unknown-linux-gnu
@@ -121,3 +123,21 @@ bump-version: lint
 	git add static/.allium/version.txt
 	git commit -m "chore: bump version to v$(version)"
 	git tag "v$(version)" -a
+
+.PHONY: deploy
+deploy:
+ifndef SDCARD_PATH
+	$(error SDCARD_PATH is not set. Create a local.mk file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
+endif
+	@echo "Deploying to $(SDCARD_PATH)..."
+	rsync -av --delete $(DIST_DIR)/.allium $(DIST_DIR)/.tmp_update $(DIST_DIR)/Apps $(SDCARD_PATH)/
+	@echo "Deployment complete! Remember to eject your SD card properly."
+
+.PHONY: deploy-all
+deploy-all:
+ifndef SDCARD_PATH
+	$(error SDCARD_PATH is not set. Create a local.mk file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
+endif
+	@echo "Deploying full dist to $(SDCARD_PATH)..."
+	rsync -av --delete $(DIST_DIR)/ $(SDCARD_PATH)/
+	@echo "Full deployment complete! Remember to eject your SD card properly."

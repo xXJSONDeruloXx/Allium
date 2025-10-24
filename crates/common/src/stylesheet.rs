@@ -126,7 +126,6 @@ impl StylesheetFont {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Stylesheet {
     pub wallpaper: Option<PathBuf>,
-    pub enable_box_art: bool,
     pub show_battery_level: bool,
     pub show_clock: bool,
     #[serde(default)]
@@ -435,7 +434,6 @@ impl Default for Stylesheet {
     fn default() -> Self {
         Self {
             wallpaper: None,
-            enable_box_art: true,
             show_battery_level: false,
             show_clock: true,
             use_recents_carousel: false,

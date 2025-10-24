@@ -66,7 +66,7 @@ where
             Rect::new(
                 x + 12,
                 y + 8,
-                if styles.enable_box_art {
+                if styles.boxart_width > 0 {
                     w - styles.boxart_width - 12 - 12 - 24
                 } else {
                     w - 12 - 12
@@ -335,8 +335,7 @@ where
 
         drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
 
-        if styles.enable_box_art {
-            // TODO: relayout list if box art is enabled/disabled
+        if styles.boxart_width > 0 {
             if let Some(entry) = self.entries.get_mut(self.list.selected()) {
                 if let Some(path) = entry.image() {
                     trace!("Loading image from {:?}", path);

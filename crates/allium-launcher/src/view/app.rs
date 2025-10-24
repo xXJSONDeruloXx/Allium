@@ -22,7 +22,7 @@ use crate::view::Recents;
 use crate::view::apps::AppsState;
 use crate::view::games::GamesState;
 use crate::view::recents::RecentsState;
-use crate::view::search_results::{SearchResultsState, SearchResultsView};
+use crate::view::search_results::SearchResultsView;
 use crate::view::settings::SettingsState;
 use crate::view::{Apps, Games, Settings};
 
@@ -33,8 +33,6 @@ struct AppState {
     games: GamesState,
     apps: AppsState,
     settings: SettingsState,
-    #[serde(skip)]
-    search_results: Option<SearchResultsState>,
 }
 
 #[derive(Debug)]
@@ -51,7 +49,6 @@ where
     search_results: Option<SearchResultsView>,
     search_view: SearchView,
     tab_before_search: Option<usize>,
-    // title: Label<String>,
     dirty: bool,
     _phantom_battery: PhantomData<B>,
 }
@@ -207,7 +204,6 @@ where
             games: self.views.1.save(),
             apps: self.views.2.save(),
             settings: self.views.3.save(),
-            search_results: self.search_results.as_ref().map(|sr| sr.save()),
         };
         serde_json::to_writer(file, &state)?;
         Ok(())
@@ -305,7 +301,6 @@ where
                         .bounding_box(styles)
                         .union(&self.status_bar.bounding_box(styles)),
                 )?;
-                // drawn |= self.title.should_draw() && self.title.draw(display, styles)?;
                 drawn |= self.tabs.should_draw() && self.tabs.draw(display, styles)?;
                 drawn |= self.status_bar.should_draw() && self.status_bar.draw(display, styles)?;
             }

@@ -11,6 +11,5 @@ pub use app::App;
 pub use apps::Apps;
 pub use games::Games;
 pub use recents::Recents;
-pub use search_results::SearchResultsView;
 pub use settings::Settings;
 pub use toast::Toast;

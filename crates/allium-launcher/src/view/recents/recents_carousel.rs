@@ -270,7 +270,7 @@ impl View for RecentsCarousel {
         &mut self,
         event: KeyEvent,
         commands: Sender<Command>,
-        bubble: &mut VecDeque<Command>,
+        _bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
         match event {
             KeyEvent::Pressed(Key::Up) | KeyEvent::Autorepeat(Key::Up) => {

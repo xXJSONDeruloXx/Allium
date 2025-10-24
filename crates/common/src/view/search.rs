@@ -81,10 +81,10 @@ impl View for SearchView {
         display: &mut <DefaultPlatform as Platform>::Display,
         styles: &Stylesheet,
     ) -> Result<bool> {
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            if matches!(self.state, SearchState::Active) {
-                return keyboard.draw(display, styles);
-            }
+        if let Some(keyboard) = self.keyboard.as_mut()
+            && matches!(self.state, SearchState::Active)
+        {
+            return keyboard.draw(display, styles);
         }
         Ok(false)
     }
@@ -99,10 +99,10 @@ impl View for SearchView {
     }
 
     fn set_should_draw(&mut self) {
-        if matches!(self.state, SearchState::Active) {
-            if let Some(keyboard) = self.keyboard.as_mut() {
-                keyboard.set_should_draw();
-            }
+        if matches!(self.state, SearchState::Active)
+            && let Some(keyboard) = self.keyboard.as_mut()
+        {
+            keyboard.set_should_draw();
         }
     }
 
@@ -116,35 +116,34 @@ impl View for SearchView {
             return Ok(false);
         }
 
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            if keyboard
+        if let Some(keyboard) = self.keyboard.as_mut()
+            && keyboard
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
-            {
-                let mut query = None;
-                bubble.retain_mut(|c| match c {
-                    Command::ValueChanged(_, val) => {
-                        if let Value::String(val) = val {
-                            query = Some(val.clone());
-                        }
-                        false
+        {
+            let mut query = None;
+            bubble.retain_mut(|c| match c {
+                Command::ValueChanged(_, val) => {
+                    if let Value::String(val) = val {
+                        query = Some(val.clone());
                     }
-                    Command::CloseView => {
-                        self.deactivate();
-                        false
-                    }
-                    _ => true,
-                });
-
-                if let Some(query) = query {
-                    if self.check_database(&commands).await? {
-                        self.state = SearchState::Searching;
-                        commands.send(Command::Search(query)).await?;
-                    }
+                    false
                 }
+                Command::CloseView => {
+                    self.deactivate();
+                    false
+                }
+                _ => true,
+            });
 
-                return Ok(true);
+            if let Some(query) = query
+                && self.check_database(&commands).await?
+            {
+                self.state = SearchState::Searching;
+                commands.send(Command::Search(query)).await?;
             }
+
+            return Ok(true);
         }
 
         Ok(false)

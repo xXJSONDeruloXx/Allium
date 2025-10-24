@@ -23,9 +23,7 @@ use crate::entry::directory::Directory;
 use crate::entry::game::Game;
 use crate::entry::lazy_image::LazyImage;
 use crate::entry::{Entry, Sort};
-use crate::view::entry_list::{EntryList, EntryListState};
-
-pub type SearchResultsState = EntryListState<SearchResultsSort>;
+use crate::view::entry_list::EntryList;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchResultsSort {
@@ -244,31 +242,6 @@ impl SearchResultsView {
             button_hints,
             search_view: SearchView::new(res),
         })
-    }
-
-    pub fn save(&self) -> SearchResultsState {
-        self.list.save()
-    }
-
-    pub fn load_or_new(
-        rect: Rect,
-        res: Resources,
-        state: Option<SearchResultsState>,
-    ) -> Result<Self> {
-        if let Some(state) = state {
-            let query = state.sort.query().to_string();
-            let list = EntryList::load(rect, res.clone(), state)?;
-
-            let mut view = Self::new(rect, res, query)?;
-            view.list = list;
-            Ok(view)
-        } else {
-            Self::new(rect, res, String::new())
-        }
-    }
-
-    pub fn query(&self) -> &str {
-        &self.query
     }
 
     pub fn update_query(&mut self, new_query: String) -> Result<()> {

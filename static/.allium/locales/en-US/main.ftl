@@ -13,6 +13,9 @@ sort-random = Sort: Random
 sort-search = Sort: Search
 sort-favorites = Sort: Favorites
 
+no-recent-games = Play a game to get started
+recents-counter = { $current }/{ $total }
+
 populating-database = Populating database...
     This may take several minutes.
     Go grab a coffee!
@@ -55,6 +58,7 @@ settings-theme = Theme
 settings-theme-dark-mode = Dark Mode
 settings-theme-show-battery-level = Battery Percentage
 settings-theme-show-clock = Clock
+settings-theme-use-recents-carousel = Recents Carousel
 settings-theme-ui-font = UI Font
 settings-theme-ui-font-size = UI Font Size
 settings-theme-guide-font = Guide Font

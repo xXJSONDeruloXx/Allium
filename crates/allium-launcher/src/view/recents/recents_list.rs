@@ -22,10 +22,10 @@ use crate::entry::lazy_image::LazyImage;
 use crate::entry::{Entry, Sort};
 use crate::view::entry_list::{EntryList, EntryListState};
 
-pub type RecentsState = EntryListState<RecentsSort>;
+pub type RecentsListState = EntryListState<RecentsSort>;
 
 #[derive(Debug)]
-pub struct Recents {
+pub struct RecentsList {
     res: Resources,
     rect: Rect,
     list: EntryList<RecentsSort>,
@@ -33,7 +33,7 @@ pub struct Recents {
     keyboard: Option<Keyboard>,
 }
 
-impl Recents {
+impl RecentsList {
     pub fn new(rect: Rect, res: Resources, list: EntryList<RecentsSort>) -> Result<Self> {
         let Rect { x, y, w: _w, h } = rect;
 
@@ -69,7 +69,11 @@ impl Recents {
         })
     }
 
-    pub fn load_or_new(rect: Rect, res: Resources, state: Option<RecentsState>) -> Result<Self> {
+    pub fn load_or_new(
+        rect: Rect,
+        res: Resources,
+        state: Option<RecentsListState>,
+    ) -> Result<Self> {
         let list = if let Some(state) = state {
             EntryList::load(rect, res.clone(), state)?
         } else {
@@ -79,7 +83,7 @@ impl Recents {
         Self::new(rect, res, list)
     }
 
-    pub fn save(&self) -> RecentsState {
+    pub fn save(&self) -> RecentsListState {
         self.list.save()
     }
 
@@ -109,7 +113,7 @@ impl Recents {
 }
 
 #[async_trait(?Send)]
-impl View for Recents {
+impl View for RecentsList {
     fn draw(
         &mut self,
         display: &mut <DefaultPlatform as Platform>::Display,
@@ -293,6 +297,7 @@ impl Sort for RecentsSort {
                     publisher: game.publisher,
                     genres: game.genres,
                     favorite: game.favorite,
+                    screenshot_path: game.screenshot_path,
                 })
             })
             .collect())

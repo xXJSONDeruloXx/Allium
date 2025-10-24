@@ -22,6 +22,7 @@ Please refer to this README.md and the [Wiki](https://github.com/goweiwen/Allium
 
 <div>
     <img alt="Main menu" src="assets/screenshots/main-menu.png" width="49%">
+    <img alt="Recents carousel" src="assets/screenshots/recents-carousel.png" width="49%">
     <img alt="Ingame menu" src="assets/screenshots/ingame-menu.png" width="49%">
     <img alt="Guide" src="assets/screenshots/guide.png" width="49%">
     <img alt="Settings" src="assets/screenshots/settings.png" width="49%">
@@ -55,6 +56,7 @@ Allium supports both the Miyoo Mini, Miyoo Mini Plus,and Miyoo Mini Flip on the 
 - Supports gameslist.xml with nested folders
 - Favorites
 - Recents list (sort by last played or playtime)
+- Alternative recents view with save-state screenshot previews
 - Search games by name
 - Activity tracker
 - [RetroArch for all supported cores](https://github.com/goweiwen/Allium/wiki/Console-Mapper)

@@ -130,8 +130,37 @@ make simulator bin=allium-menu
 Running `make` will build Allium and RetroArch, then copy the built and static files into `dist/`.
 ```
 make all
-cp -r dist/. <sdcard>
 ```
+
+### Deploying to Hardware
+
+For quick testing on real hardware, you can use the deployment targets:
+
+1. Create a `local.mk` file (git-ignored) in the project root:
+```bash
+cp local.mk.example local.mk
+```
+
+2. Edit `local.mk` and set your SD card path:
+```makefile
+SDCARD_PATH=/path/to/sdcard  # Adjust for your mount point
+```
+
+3. Deploy just update files to existing Allium SD Card:
+```bash
+make deploy
+```
+
+Or deploy everything to a fresh SD Card:
+```bash
+make deploy-all
+```
+
+Alternatively, set `SDCARD_PATH` as an environment variable:
+```bash
+SDCARD_PATH=/path/to/sdcard make deploy
+```
+
 
 ## Acknowledgements
 

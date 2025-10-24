@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::constants::{ALLIUM_LOCALE_SETTINGS, ALLIUM_LOCALES_DIR};
 
+pub use fluent_templates::fluent_bundle::FluentValue as LocaleFluentValue;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocaleSettings {
     pub lang: String,

@@ -8,3 +8,4 @@ SDL2.dll
 .devenv
 .devenv.flake.nix
 devenv.lock
+local.mk

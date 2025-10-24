@@ -13,7 +13,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::{Stylesheet, StylesheetColor};
-use common::view::{BatteryIndicator, Clock, Label, Row, View};
+use common::view::{BatteryIndicator, Clock, Label, Row, SearchView, View};
 use log::{trace, warn};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
@@ -22,6 +22,7 @@ use crate::view::Recents;
 use crate::view::apps::AppsState;
 use crate::view::games::GamesState;
 use crate::view::recents::RecentsState;
+use crate::view::search_results::{SearchResultsState, SearchResultsView};
 use crate::view::settings::SettingsState;
 use crate::view::{Apps, Games, Settings};
 
@@ -32,6 +33,8 @@ struct AppState {
     games: GamesState,
     apps: AppsState,
     settings: SettingsState,
+    #[serde(skip)]
+    search_results: Option<SearchResultsState>,
 }
 
 #[derive(Debug)]
@@ -40,10 +43,14 @@ where
     B: Battery + 'static,
 {
     rect: Rect,
+    res: Resources,
     status_bar: Row<Box<dyn View>>,
     views: (Recents, Games, Apps, Settings),
     selected: usize,
     tabs: Row<Label<String>>,
+    search_results: Option<SearchResultsView>,
+    search_view: SearchView,
+    tab_before_search: Option<usize>,
     // title: Label<String>,
     dirty: bool,
     _phantom_battery: PhantomData<B>,
@@ -130,10 +137,14 @@ where
 
         Ok(Self {
             rect,
+            res: res.clone(),
             views,
             selected,
             status_bar,
             tabs,
+            search_results: None,
+            search_view: SearchView::new(res),
+            tab_before_search: None,
             // title,
             dirty: true,
             _phantom_battery: PhantomData,
@@ -196,6 +207,7 @@ where
             games: self.views.1.save(),
             apps: self.views.2.save(),
             settings: self.views.3.save(),
+            search_results: self.search_results.as_ref().map(|sr| sr.save()),
         };
         serde_json::to_writer(file, &state)?;
         Ok(())
@@ -247,14 +259,21 @@ where
     }
 
     pub fn start_search(&mut self) {
-        self.tab_change(0);
-        self.views.0.start_search();
+        self.tab_before_search = Some(self.selected);
+        self.search_view.activate();
     }
 
     pub fn search(&mut self, query: String) -> Result<()> {
-        self.tab_change(0);
-        self.views.0.search(query)?;
+        let search_view = SearchResultsView::new(self.rect, self.res.clone(), query)?;
+        self.search_results = Some(search_view);
         Ok(())
+    }
+
+    pub fn close_search_results(&mut self) {
+        self.search_results = None;
+        self.search_view.deactivate();
+        self.tab_before_search = None;
+        self.set_should_draw();
     }
 
     // fn title(&self) -> String {
@@ -279,24 +298,41 @@ where
 
         let mut drawn = false;
 
-        if self.tabs.should_draw() || self.status_bar.should_draw() {
-            display.load(
-                self.tabs
-                    .bounding_box(styles)
-                    .union(&self.status_bar.bounding_box(styles)),
-            )?;
-            // drawn |= self.title.should_draw() && self.title.draw(display, styles)?;
-            drawn |= self.tabs.should_draw() && self.tabs.draw(display, styles)?;
-            drawn |= self.status_bar.should_draw() && self.status_bar.draw(display, styles)?;
+        if self.search_results.is_none() {
+            if self.tabs.should_draw() || self.status_bar.should_draw() {
+                display.load(
+                    self.tabs
+                        .bounding_box(styles)
+                        .union(&self.status_bar.bounding_box(styles)),
+                )?;
+                // drawn |= self.title.should_draw() && self.title.draw(display, styles)?;
+                drawn |= self.tabs.should_draw() && self.tabs.draw(display, styles)?;
+                drawn |= self.status_bar.should_draw() && self.status_bar.draw(display, styles)?;
+            }
+
+            if !self.search_view.is_active() {
+                drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
+            }
         }
 
-        drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
+        drawn |= self.search_view.draw(display, styles)?;
+
+        if let Some(search_results) = &mut self.search_results {
+            drawn |= search_results.draw(display, styles)?;
+        }
 
         Ok(drawn)
     }
 
     fn should_draw(&self) -> bool {
-        self.status_bar.should_draw() || self.view().should_draw() || self.tabs.should_draw()
+        self.status_bar.should_draw()
+            || self.view().should_draw()
+            || self.tabs.should_draw()
+            || self.search_view.should_draw()
+            || self
+                .search_results
+                .as_ref()
+                .map_or(false, |sr| sr.should_draw())
     }
 
     fn set_should_draw(&mut self) {
@@ -304,6 +340,10 @@ where
         self.status_bar.set_should_draw();
         self.view_mut().set_should_draw();
         self.tabs.set_should_draw();
+        self.search_view.set_should_draw();
+        if let Some(search_results) = &mut self.search_results {
+            search_results.set_should_draw();
+        }
     }
 
     async fn handle_key_event(
@@ -312,6 +352,45 @@ where
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
+        if let Some(search_results) = &mut self.search_results {
+            if search_results
+                .handle_key_event(event, commands.clone(), bubble)
+                .await?
+            {
+                let mut close_search = false;
+                for cmd in bubble.iter() {
+                    match cmd {
+                        Command::CloseView => {
+                            close_search = true;
+                        }
+                        Command::Search(_) => {}
+                        _ => {}
+                    }
+                }
+                if close_search {
+                    self.close_search_results();
+                }
+                bubble.clear();
+                return Ok(true);
+            }
+        }
+
+        if self.search_view.is_active() {
+            if self
+                .search_view
+                .handle_key_event(event, commands.clone(), bubble)
+                .await?
+            {
+                for cmd in bubble.iter() {
+                    if let Command::Search(query) = cmd {
+                        self.search(query.clone())?;
+                    }
+                }
+                bubble.clear();
+                return Ok(true);
+            }
+        }
+
         if self
             .view_mut()
             .handle_key_event(event, commands, bubble)
@@ -319,7 +398,6 @@ where
         {
             return Ok(true);
         }
-
         match event {
             KeyEvent::Pressed(Key::Left) => {
                 trace!("switch state prev");
@@ -336,7 +414,11 @@ where
     }
 
     fn children(&self) -> Vec<&dyn View> {
-        vec![&self.status_bar, self.view(), &self.tabs]
+        let mut children: Vec<&dyn View> = vec![&self.status_bar, self.view(), &self.tabs];
+        if let Some(search_results) = &self.search_results {
+            children.push(search_results);
+        }
+        children
     }
 
     fn children_mut(&mut self) -> Vec<&mut dyn View> {
@@ -347,7 +429,11 @@ where
             3 => &mut self.views.3,
             _ => unreachable!(),
         };
-        vec![&mut self.status_bar, view, &mut self.tabs]
+        let mut children: Vec<&mut dyn View> = vec![&mut self.status_bar, view, &mut self.tabs];
+        if let Some(search_results) = &mut self.search_results {
+            children.push(search_results);
+        }
+        children
     }
 
     fn bounding_box(&mut self, _styles: &Stylesheet) -> Rect {

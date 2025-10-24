@@ -13,7 +13,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::{Stylesheet, StylesheetColor};
-use common::view::{BatteryIndicator, Clock, Label, Row, View};
+use common::view::{BatteryIndicator, Clock, Label, Row, SearchView, View};
 use log::{trace, warn};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
@@ -50,6 +50,8 @@ where
     selected: usize,
     tabs: Row<Label<String>>,
     search_results: Option<SearchResultsView>,
+    search_view: SearchView,
+    tab_before_search: Option<usize>,
     // title: Label<String>,
     dirty: bool,
     _phantom_battery: PhantomData<B>,
@@ -136,12 +138,14 @@ where
 
         Ok(Self {
             rect,
-            res,
+            res: res.clone(),
             views,
             selected,
             status_bar,
             tabs,
             search_results: None,
+            search_view: SearchView::new(res),
+            tab_before_search: None,
             // title,
             dirty: true,
             _phantom_battery: PhantomData,
@@ -256,13 +260,11 @@ where
     }
 
     pub fn start_search(&mut self) {
-        // Switch to Recents tab and activate search keyboard
-        self.tab_change(0);
-        self.views.0.start_search();
+        self.tab_before_search = Some(self.selected);
+        self.search_view.activate();
     }
 
     pub fn search(&mut self, query: String) -> Result<()> {
-        // Create SearchResultsView with the query
         let search_view = SearchResultsView::new(self.rect, self.res.clone(), query)?;
         self.search_results = Some(search_view);
         Ok(())
@@ -270,10 +272,8 @@ where
 
     pub fn close_search_results(&mut self) {
         self.search_results = None;
-        // Deactivate search keyboard in recents view if we're on that tab
-        if self.selected == 0 {
-            self.views.0.close_search();
-        }
+        self.search_view.deactivate();
+        self.tab_before_search = None;
         self.set_should_draw();
     }
 
@@ -299,7 +299,6 @@ where
 
         let mut drawn = false;
 
-        // Only draw tabs/status bar if search results are not active
         if self.search_results.is_none() {
             if self.tabs.should_draw() || self.status_bar.should_draw() {
                 display.load(
@@ -312,10 +311,13 @@ where
                 drawn |= self.status_bar.should_draw() && self.status_bar.draw(display, styles)?;
             }
 
-            drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
+            if !self.search_view.is_active() {
+                drawn |= self.view().should_draw() && self.view_mut().draw(display, styles)?;
+            }
         }
 
-        // Draw search results overlay if active
+        drawn |= self.search_view.draw(display, styles)?;
+
         if let Some(search_results) = &mut self.search_results {
             drawn |= search_results.draw(display, styles)?;
         }
@@ -327,6 +329,7 @@ where
         self.status_bar.should_draw()
             || self.view().should_draw()
             || self.tabs.should_draw()
+            || self.search_view.should_draw()
             || self
                 .search_results
                 .as_ref()
@@ -338,6 +341,7 @@ where
         self.status_bar.set_should_draw();
         self.view_mut().set_should_draw();
         self.tabs.set_should_draw();
+        self.search_view.set_should_draw();
         if let Some(search_results) = &mut self.search_results {
             search_results.set_should_draw();
         }
@@ -349,36 +353,45 @@ where
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        // If search results are active, they get priority
         if let Some(search_results) = &mut self.search_results {
             if search_results
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
             {
-                // Check bubble for commands
                 let mut close_search = false;
                 for cmd in bubble.iter() {
                     match cmd {
                         Command::CloseView => {
                             close_search = true;
                         }
-                        Command::Search(_) => {
-                            // SearchResultsView handles query updates internally
-                            // Just clear the command from bubble so it doesn't propagate
-                        }
+                        Command::Search(_) => {}
                         _ => {}
                     }
                 }
                 if close_search {
                     self.close_search_results();
                 }
-                // Clear the bubble since SearchResultsView handled everything
                 bubble.clear();
                 return Ok(true);
             }
         }
 
-        // Otherwise, let the current view handle the event
+        if self.search_view.is_active() {
+            if self
+                .search_view
+                .handle_key_event(event, commands.clone(), bubble)
+                .await?
+            {
+                for cmd in bubble.iter() {
+                    if let Command::Search(query) = cmd {
+                        self.search(query.clone())?;
+                    }
+                }
+                bubble.clear();
+                return Ok(true);
+            }
+        }
+
         if self
             .view_mut()
             .handle_key_event(event, commands, bubble)
@@ -386,8 +399,6 @@ where
         {
             return Ok(true);
         }
-
-        // Finally, handle tab switching
         match event {
             KeyEvent::Pressed(Key::Left) => {
                 trace!("switch state prev");

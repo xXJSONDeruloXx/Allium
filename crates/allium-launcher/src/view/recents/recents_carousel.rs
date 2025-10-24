@@ -11,7 +11,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Label, Row, SearchView, View};
+use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Label, Row, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -38,7 +38,6 @@ pub struct RecentsCarousel {
     screenshot: Image,
     game_name: Label<String>,
     button_hints: Row<ButtonHint<String>>,
-    search_view: SearchView,
     dirty: bool,
 }
 
@@ -102,7 +101,6 @@ impl RecentsCarousel {
             screenshot,
             game_name,
             button_hints,
-            search_view: SearchView::new(res),
             dirty: true,
         };
 
@@ -176,15 +174,6 @@ impl RecentsCarousel {
         Ok(())
     }
 
-    pub fn start_search(&mut self) {
-        self.search_view.activate();
-    }
-
-    pub fn close_search(&mut self) {
-        self.search_view.deactivate();
-        self.set_should_draw();
-    }
-
     pub fn save(&self) -> RecentsCarouselState {
         RecentsCarouselState { selected: 0 }
     }
@@ -228,43 +217,37 @@ impl View for RecentsCarousel {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        // Only draw carousel content if search is not active
-        if !self.search_view.is_active() {
-            if self.dirty {
-                display.load(self.rect)?;
-                self.dirty = false;
-                drawn = true;
-            }
+        if self.dirty {
+            display.load(self.rect)?;
+            self.dirty = false;
+            drawn = true;
+        }
 
-            if self.screenshot.should_draw() {
-                drawn |= self.screenshot.draw(display, styles)?;
-            }
+        if self.screenshot.should_draw() {
+            drawn |= self.screenshot.draw(display, styles)?;
+        }
 
-            if self.games.is_empty() {
-                let locale = self.res.get::<Locale>();
-                let mut empty_label = Label::new(
-                    Point::new(
-                        self.rect.x + self.rect.w as i32 / 2,
-                        self.rect.y + self.rect.h as i32 / 2,
-                    ),
-                    locale.t("no-recent-games"),
-                    Alignment::Center,
-                    None,
-                );
-                drawn |= empty_label.draw(display, styles)?;
-            } else {
-                if self.game_name.should_draw() {
-                    drawn |= self.game_name.draw(display, styles)?;
-                }
-            }
-
-            if self.button_hints.should_draw() {
-                drawn |= self.button_hints.draw(display, styles)?;
+        if self.games.is_empty() {
+            let locale = self.res.get::<Locale>();
+            let mut empty_label = Label::new(
+                Point::new(
+                    self.rect.x + self.rect.w as i32 / 2,
+                    self.rect.y + self.rect.h as i32 / 2,
+                ),
+                locale.t("no-recent-games"),
+                Alignment::Center,
+                None,
+            );
+            drawn |= empty_label.draw(display, styles)?;
+        } else {
+            if self.game_name.should_draw() {
+                drawn |= self.game_name.draw(display, styles)?;
             }
         }
 
-        // Draw search overlay if active
-        drawn |= self.search_view.draw(display, styles)?;
+        if self.button_hints.should_draw() {
+            drawn |= self.button_hints.draw(display, styles)?;
+        }
 
         Ok(drawn)
     }
@@ -274,7 +257,6 @@ impl View for RecentsCarousel {
             || self.screenshot.should_draw()
             || self.game_name.should_draw()
             || self.button_hints.should_draw()
-            || self.search_view.should_draw()
     }
 
     fn set_should_draw(&mut self) {
@@ -282,7 +264,6 @@ impl View for RecentsCarousel {
         self.screenshot.set_should_draw();
         self.game_name.set_should_draw();
         self.button_hints.set_should_draw();
-        self.search_view.set_should_draw();
     }
 
     async fn handle_key_event(
@@ -291,16 +272,6 @@ impl View for RecentsCarousel {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        // Search intercepts events when active
-        if self.search_view.is_active()
-            && self
-                .search_view
-                .handle_key_event(event, commands.clone(), bubble)
-                .await?
-        {
-            return Ok(true);
-        }
-
         match event {
             KeyEvent::Pressed(Key::Up) | KeyEvent::Autorepeat(Key::Up) => {
                 self.navigate_up()?;
@@ -315,13 +286,7 @@ impl View for RecentsCarousel {
                 Ok(true)
             }
             KeyEvent::Pressed(Key::X) => {
-                if !self.search_view.is_active() {
-                    self.start_search();
-                } else {
-                    // Cancel search
-                    self.search_view.deactivate();
-                    commands.send(Command::Redraw).await?;
-                }
+                commands.send(Command::StartSearch).await?;
                 Ok(true)
             }
             _ => Ok(false),

@@ -69,20 +69,6 @@ impl Recents {
             Self::List(l) => RecentsState::List(l.save()),
         }
     }
-
-    pub fn start_search(&mut self) {
-        match self {
-            Self::Carousel(c) => c.start_search(),
-            Self::List(l) => l.start_search(),
-        }
-    }
-
-    pub fn close_search(&mut self) {
-        match self {
-            Self::Carousel(c) => c.close_search(),
-            Self::List(l) => l.close_search(),
-        }
-    }
 }
 
 #[async_trait(?Send)]

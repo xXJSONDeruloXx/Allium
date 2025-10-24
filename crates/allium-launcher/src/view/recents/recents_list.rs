@@ -10,7 +10,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::{ButtonHint, ButtonIcon, Row, SearchView, View};
+use common::view::{ButtonHint, ButtonIcon, Row, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -28,7 +28,6 @@ pub struct RecentsList {
     rect: Rect,
     list: EntryList<RecentsSort>,
     button_hints: Row<ButtonHint<String>>,
-    search_view: SearchView,
 }
 
 impl RecentsList {
@@ -62,7 +61,6 @@ impl RecentsList {
             rect,
             list,
             button_hints,
-            search_view: SearchView::new(res),
         })
     }
 
@@ -83,15 +81,6 @@ impl RecentsList {
     pub fn save(&self) -> RecentsListState {
         self.list.save()
     }
-
-    pub fn start_search(&mut self) {
-        self.search_view.activate();
-    }
-
-    pub fn close_search(&mut self) {
-        self.search_view.deactivate();
-        self.set_should_draw();
-    }
 }
 
 #[async_trait(?Send)]
@@ -103,29 +92,22 @@ impl View for RecentsList {
     ) -> Result<bool> {
         let mut drawn = false;
 
-        // Only draw list content if search is not active
-        if !self.search_view.is_active() {
-            if self.list.should_draw() {
-                drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
-                self.button_hints.set_should_draw();
-            }
-            drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
+        if self.list.should_draw() {
+            drawn |= self.list.should_draw() && self.list.draw(display, styles)?;
+            self.button_hints.set_should_draw();
         }
-
-        // Draw search overlay if active
-        drawn |= self.search_view.draw(display, styles)?;
+        drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
 
         Ok(drawn)
     }
 
     fn should_draw(&self) -> bool {
-        self.list.should_draw() || self.button_hints.should_draw() || self.search_view.should_draw()
+        self.list.should_draw() || self.button_hints.should_draw()
     }
 
     fn set_should_draw(&mut self) {
         self.list.set_should_draw();
         self.button_hints.set_should_draw();
-        self.search_view.set_should_draw();
     }
 
     async fn handle_key_event(
@@ -134,26 +116,9 @@ impl View for RecentsList {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        // Search intercepts events when active
-        if self.search_view.is_active()
-            && self
-                .search_view
-                .handle_key_event(event, commands.clone(), bubble)
-                .await?
-        {
-            return Ok(true);
-        }
-
         match event {
             KeyEvent::Pressed(Key::X) => {
-                if !self.search_view.is_active() {
-                    self.start_search();
-                } else {
-                    // Cancel search
-                    self.search_view.deactivate();
-                    self.list.sort(RecentsSort::LastPlayed)?;
-                    commands.send(Command::Redraw).await?;
-                }
+                commands.send(Command::StartSearch).await?;
                 return Ok(true);
             }
             _ => self.list.handle_key_event(event, commands, bubble).await,

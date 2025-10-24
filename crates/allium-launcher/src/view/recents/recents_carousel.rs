@@ -79,13 +79,22 @@ impl RecentsCarousel {
             ),
             {
                 let locale = res.get::<Locale>();
-                vec![ButtonHint::new(
-                    res.clone(),
-                    Point::zero(),
-                    Key::A,
-                    locale.t("button-select"),
-                    Alignment::Right,
-                )]
+                vec![
+                    ButtonHint::new(
+                        res.clone(),
+                        Point::zero(),
+                        Key::A,
+                        locale.t("button-select"),
+                        Alignment::Right,
+                    ),
+                    ButtonHint::new(
+                        res.clone(),
+                        Point::zero(),
+                        Key::X,
+                        locale.t("sort-search"),
+                        Alignment::Right,
+                    ),
+                ]
             },
             Alignment::Right,
             12,

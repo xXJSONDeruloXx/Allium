@@ -1,9 +1,8 @@
 use std::collections::VecDeque;
-use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use common::command::{Command, Value};
+use common::command::Command;
 use common::constants::RECENT_GAMES_LIMIT;
 use common::database::Database;
 use common::geom::{Alignment, Point, Rect};
@@ -11,7 +10,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::{ButtonHint, ButtonIcon, Keyboard, Row, View};
+use common::view::{ButtonHint, ButtonIcon, Row, SearchView, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -26,11 +25,10 @@ pub type RecentsListState = EntryListState<RecentsSort>;
 
 #[derive(Debug)]
 pub struct RecentsList {
-    res: Resources,
     rect: Rect,
     list: EntryList<RecentsSort>,
     button_hints: Row<ButtonHint<String>>,
-    keyboard: Option<Keyboard>,
+    search_view: SearchView,
 }
 
 impl RecentsList {
@@ -61,11 +59,10 @@ impl RecentsList {
         drop(styles);
 
         Ok(Self {
-            res,
             rect,
             list,
             button_hints,
-            keyboard: None,
+            search_view: SearchView::new(res),
         })
     }
 
@@ -88,26 +85,12 @@ impl RecentsList {
     }
 
     pub fn start_search(&mut self) {
-        self.keyboard = Some(Keyboard::new(self.res.clone(), String::new(), false));
-    }
-
-    pub async fn try_search(&mut self, commands: Sender<Command>, query: String) -> Result<()> {
-        if !self.res.get::<Database>().has_indexed()? {
-            let toast = self.res.get::<Locale>().t("populating-database");
-            commands.send(Command::Toast(toast, None)).await?;
-            commands.send(Command::PopulateDb).await?;
-            commands
-                .send(Command::Toast(String::new(), Some(Duration::ZERO)))
-                .await?;
-        }
-
-        commands.send(Command::Search(query)).await?;
-
-        Ok(())
+        self.search_view.activate();
     }
 
     pub fn search(&mut self, query: String) -> Result<()> {
         self.list.sort(RecentsSort::Search(query))?;
+        self.search_view.deactivate();
         Ok(())
     }
 }
@@ -127,28 +110,20 @@ impl View for RecentsList {
         }
         drawn |= self.button_hints.should_draw() && self.button_hints.draw(display, styles)?;
 
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            if drawn {
-                keyboard.set_should_draw();
-            }
-            drawn |= keyboard.should_draw() && keyboard.draw(display, styles)?;
-        }
+        // Draw search overlay if active
+        drawn |= self.search_view.draw(display, styles)?;
 
         Ok(drawn)
     }
 
     fn should_draw(&self) -> bool {
-        self.list.should_draw()
-            || self.button_hints.should_draw()
-            || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
+        self.list.should_draw() || self.button_hints.should_draw() || self.search_view.should_draw()
     }
 
     fn set_should_draw(&mut self) {
         self.list.set_should_draw();
         self.button_hints.set_should_draw();
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            keyboard.set_should_draw();
-        }
+        self.search_view.set_should_draw();
     }
 
     async fn handle_key_event(
@@ -157,37 +132,23 @@ impl View for RecentsList {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        if let Some(keyboard) = self.keyboard.as_mut()
-            && keyboard
+        // Search intercepts events when active
+        if self.search_view.is_active()
+            && self
+                .search_view
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
         {
-            let mut query = None;
-            bubble.retain_mut(|c| match c {
-                Command::ValueChanged(_, val) => {
-                    if let Value::String(val) = val {
-                        query = Some(val.clone());
-                    }
-                    false
-                }
-                Command::CloseView => {
-                    self.keyboard = None;
-                    false
-                }
-                _ => true,
-            });
-            if let Some(query) = query {
-                self.try_search(commands, query).await?;
-            }
             return Ok(true);
         }
 
         match event {
             KeyEvent::Pressed(Key::X) => {
-                if self.keyboard.is_none() {
+                if !self.search_view.is_active() {
                     self.start_search();
                 } else {
-                    self.keyboard = None;
+                    // Cancel search
+                    self.search_view.deactivate();
                     self.list.sort(RecentsSort::LastPlayed)?;
                     commands.send(Command::Redraw).await?;
                 }

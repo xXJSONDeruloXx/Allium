@@ -1,9 +1,8 @@
 use std::collections::VecDeque;
-use std::time::Duration;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use common::command::{Command, Value};
+use common::command::Command;
 use common::constants::RECENT_GAMES_LIMIT;
 use common::database::Database;
 use common::display::Display;
@@ -12,7 +11,7 @@ use common::locale::Locale;
 use common::platform::{DefaultPlatform, Key, KeyEvent, Platform};
 use common::resources::Resources;
 use common::stylesheet::Stylesheet;
-use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Keyboard, Label, Row, View};
+use common::view::{ButtonHint, ButtonIcon, Image, ImageMode, Label, Row, SearchView, View};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::Sender;
 
@@ -39,7 +38,7 @@ pub struct RecentsCarousel {
     screenshot: Image,
     game_name: Label<String>,
     button_hints: Row<ButtonHint<String>>,
-    keyboard: Option<Keyboard>,
+    search_view: SearchView,
     dirty: bool,
 }
 
@@ -97,13 +96,13 @@ impl RecentsCarousel {
 
         let mut carousel = Self {
             rect,
-            res,
+            res: res.clone(),
             games,
             selected,
             screenshot,
             game_name,
             button_hints,
-            keyboard: None,
+            search_view: SearchView::new(res),
             dirty: true,
         };
 
@@ -178,25 +177,13 @@ impl RecentsCarousel {
     }
 
     pub fn start_search(&mut self) {
-        self.keyboard = Some(Keyboard::new(self.res.clone(), String::new(), false));
+        self.search_view.activate();
     }
 
     pub fn search(&mut self, _query: String) -> Result<()> {
-        Ok(())
-    }
-
-    pub async fn try_search(&mut self, commands: Sender<Command>, query: String) -> Result<()> {
-        if !self.res.get::<Database>().has_indexed()? {
-            let toast = self.res.get::<Locale>().t("populating-database");
-            commands.send(Command::Toast(toast, None)).await?;
-            commands.send(Command::PopulateDb).await?;
-            commands
-                .send(Command::Toast(String::new(), Some(Duration::ZERO)))
-                .await?;
-        }
-
-        commands.send(Command::Search(query)).await?;
-
+        // TODO: Implement search results display in carousel view
+        // For now, we deactivate search since carousel doesn't support result display yet
+        self.search_view.deactivate();
         Ok(())
     }
 
@@ -275,12 +262,8 @@ impl View for RecentsCarousel {
             drawn |= self.button_hints.draw(display, styles)?;
         }
 
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            if drawn {
-                keyboard.set_should_draw();
-            }
-            drawn |= keyboard.should_draw() && keyboard.draw(display, styles)?;
-        }
+        // Draw search overlay if active
+        drawn |= self.search_view.draw(display, styles)?;
 
         Ok(drawn)
     }
@@ -290,7 +273,7 @@ impl View for RecentsCarousel {
             || self.screenshot.should_draw()
             || self.game_name.should_draw()
             || self.button_hints.should_draw()
-            || self.keyboard.as_ref().is_some_and(|k| k.should_draw())
+            || self.search_view.should_draw()
     }
 
     fn set_should_draw(&mut self) {
@@ -298,9 +281,7 @@ impl View for RecentsCarousel {
         self.screenshot.set_should_draw();
         self.game_name.set_should_draw();
         self.button_hints.set_should_draw();
-        if let Some(keyboard) = self.keyboard.as_mut() {
-            keyboard.set_should_draw();
-        }
+        self.search_view.set_should_draw();
     }
 
     async fn handle_key_event(
@@ -309,28 +290,13 @@ impl View for RecentsCarousel {
         commands: Sender<Command>,
         bubble: &mut VecDeque<Command>,
     ) -> Result<bool> {
-        if let Some(keyboard) = self.keyboard.as_mut()
-            && keyboard
+        // Search intercepts events when active
+        if self.search_view.is_active()
+            && self
+                .search_view
                 .handle_key_event(event, commands.clone(), bubble)
                 .await?
         {
-            let mut query = None;
-            bubble.retain_mut(|c| match c {
-                Command::ValueChanged(_, val) => {
-                    if let Value::String(val) = val {
-                        query = Some(val.clone());
-                    }
-                    false
-                }
-                Command::CloseView => {
-                    self.keyboard = None;
-                    false
-                }
-                _ => true,
-            });
-            if let Some(query) = query {
-                self.try_search(commands, query).await?;
-            }
             return Ok(true);
         }
 
@@ -348,10 +314,11 @@ impl View for RecentsCarousel {
                 Ok(true)
             }
             KeyEvent::Pressed(Key::X) => {
-                if self.keyboard.is_none() {
+                if !self.search_view.is_active() {
                     self.start_search();
                 } else {
-                    self.keyboard = None;
+                    // Cancel search
+                    self.search_view.deactivate();
                     commands.send(Command::Redraw).await?;
                 }
                 Ok(true)

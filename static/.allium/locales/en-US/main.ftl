@@ -12,8 +12,12 @@ sort-release-date = Sort: Release Date
 sort-random = Sort: Random
 sort-search = Sort: Search
 sort-favorites = Sort: Favorites
+sort-relevance = Sort: Relevance
 
 no-recent-games = Play a game to get started
+no-search-results = No games found
+one-search-result = 1 game found
+n-search-results = { $count } games found
 
 populating-database = Populating database...
     This may take several minutes.
@@ -139,6 +143,9 @@ button-back = Back
 button-confirm = Confirm
 button-edit = Edit
 button-select = Select
+button-launch = Launch
+button-sort = Sort
+button-edit-search = Edit Search
 
 keyboard-button-backspace = Backspace
 keyboard-button-shift = Shift

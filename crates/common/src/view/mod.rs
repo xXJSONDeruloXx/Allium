@@ -9,6 +9,7 @@ mod list;
 mod null;
 mod row;
 mod scroll_list;
+mod search;
 mod settings_list;
 
 use std::collections::VecDeque;
@@ -34,6 +35,7 @@ pub use self::list::List;
 pub use self::null::NullView;
 pub use self::row::Row;
 pub use self::scroll_list::ScrollList;
+pub use self::search::{SearchState, SearchView};
 pub use self::settings_list::SettingsList;
 
 use anyhow::Result;

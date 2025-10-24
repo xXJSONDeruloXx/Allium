@@ -197,7 +197,7 @@ impl SearchResultsView {
         // Header showing search query
         let header = Label::new(
             Point::new(x + 12, y + 8),
-            format!("🔍 {}", query),
+            format!("Search: {}", query),
             Alignment::Left,
             Some(w - 24),
         );
@@ -338,10 +338,15 @@ impl View for SearchResultsView {
         let mut drawn = false;
 
         // Draw solid background to cover content behind
+        // Leave space for button hints at bottom
         if self.should_draw() {
+            let button_hint_height = ButtonIcon::diameter(styles) + 16; // Icon + padding
             let background_rect = Rectangle::new(
                 embedded_graphics::prelude::Point::new(self.rect.x, self.rect.y),
-                embedded_graphics::prelude::Size::new(self.rect.w, self.rect.h),
+                embedded_graphics::prelude::Size::new(
+                    self.rect.w,
+                    self.rect.h.saturating_sub(button_hint_height),
+                ),
             );
             display.fill_solid(&background_rect, styles.background_color)?;
             drawn = true;
@@ -416,8 +421,8 @@ impl View for SearchResultsView {
         // Handle our own keys
         match event {
             KeyEvent::Pressed(Key::B) => {
-                // Go back to previous view
-                commands.send(Command::CloseView).await?;
+                // Go back to previous view - add to bubble so app can handle it
+                bubble.push_back(Command::CloseView);
                 Ok(true)
             }
             KeyEvent::Pressed(Key::X) => {

@@ -13,6 +13,8 @@ sort-random = ソート：ランダム
 sort-search = ソート：検索
 sort-favorites = ソート:お気に入り
 
+no-recent-games = ゲームをプレイして開始
+
 populating-database = データベースへの入力...
     数分かかるかもしれません。
     お茶でも飲んでいいですよ！
@@ -55,6 +57,7 @@ settings-theme = テーマ
 settings-theme-dark-mode = ダークモード
 settings-theme-show-battery-level = バッテリー残
 settings-theme-show-clock = 時計
+settings-theme-use-recents-carousel = 最近のカルーセル
 settings-theme-ui-font = UIフォント
 settings-theme-ui-font-size = UIフォントサイズ
 settings-theme-guide-font = ガイドフォント

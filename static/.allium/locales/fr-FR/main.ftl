@@ -13,6 +13,8 @@ sort-random = Tri: Aléatoire
 sort-search = Tri: Recherche
 sort-favorites = Tri: Favoris
 
+no-recent-games = Lancez un jeu pour commencer
+
 populating-database = Génération de la BDD...
     Cette opération peut prendre plusieurs minutes.
     Allez prendre un café !
@@ -55,6 +57,7 @@ settings-theme = Thème
 settings-theme-dark-mode = Mode sombre
 settings-theme-show-battery-level = Pourcentage de batterie
 settings-theme-show-clock = Horloge
+settings-theme-use-recents-carousel = Carrousel des récents
 settings-theme-ui-font = UI: Police
 settings-theme-ui-font-size = UI: Taille de police
 settings-theme-guide-font = Guide: Police

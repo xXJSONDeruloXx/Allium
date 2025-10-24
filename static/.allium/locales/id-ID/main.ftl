@@ -13,6 +13,8 @@ sort-random = Urut: Acak
 sort-search = Urut: Cari
 sort-favorites = Urut: Favorit
 
+no-recent-games = Mainkan gim untuk memulai
+
 populating-database = Refresh daftar gim...
     Proses ini butuh beberapa menit.
     Sembari menunggu, ngopi dulu!
@@ -55,6 +57,7 @@ settings-theme = Tema
 settings-theme-dark-mode = Mode Gelap
 settings-theme-show-battery-level = Persentase Baterai
 settings-theme-show-clock = Jam
+settings-theme-use-recents-carousel = Korsel terakhir
 settings-theme-ui-font = Huruf sistem
 settings-theme-ui-font-size = Ukuran huruf
 settings-theme-guide-font = Huruf di Panduan

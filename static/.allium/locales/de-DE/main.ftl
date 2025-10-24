@@ -13,6 +13,8 @@ sort-random = Sortierung: Zufall
 sort-search = Sortierung: Suche
 sort-favorites = Sortierung: Favoriten
 
+no-recent-games = Spiele ein Spiel, um zu beginnen
+
 populating-database = Fülle Datenbank...
     Dies kann einige Minuten dauern.
     Geh einen Kaffee trinken!
@@ -55,6 +57,7 @@ settings-theme = Design
 settings-theme-dark-mode = Dunkles Design
 settings-theme-show-battery-level = Akkustand anzeigen
 settings-theme-show-clock = Uhr
+settings-theme-use-recents-carousel = Verlauf-Karussell
 settings-theme-ui-font = UI Schriftart
 settings-theme-ui-font-size = UI Schriftgröße
 settings-theme-guide-font = Schriftart Anleitung

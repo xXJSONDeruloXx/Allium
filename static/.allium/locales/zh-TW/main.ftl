@@ -13,6 +13,8 @@ sort-random = 排序：隨機
 sort-search = 排序：搜索
 sort-favorites = 排序:收藏
 
+no-recent-games = 玩遊戲開始
+
 populating-database = 填充數據庫...
     這可能需要幾分鐘。
     去喝杯茶吧！
@@ -55,6 +57,7 @@ settings-theme = 主題
 settings-theme-dark-mode = 暗黑模式
 settings-theme-show-battery-level = 顯示電池電量
 settings-theme-show-clock = 時鐘
+settings-theme-use-recents-carousel = 最近輪播
 settings-theme-ui-font = UI字體
 settings-theme-ui-font-size = UI字體大小
 settings-theme-guide-font = 指南字體

@@ -180,13 +180,6 @@ impl RecentsCarousel {
         self.search_view.activate();
     }
 
-    pub fn search(&mut self, _query: String) -> Result<()> {
-        // TODO: Implement search results display in carousel view
-        // For now, we deactivate search since carousel doesn't support result display yet
-        self.search_view.deactivate();
-        Ok(())
-    }
-
     pub fn save(&self) -> RecentsCarouselState {
         RecentsCarouselState { selected: 0 }
     }

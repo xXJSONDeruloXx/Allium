@@ -34,6 +34,7 @@ struct AppState {
     apps: AppsState,
     settings: SettingsState,
     #[serde(skip)]
+    #[allow(dead_code)] // Used in save() method
     search_results: Option<SearchResultsState>,
 }
 
@@ -322,7 +323,10 @@ where
         self.status_bar.should_draw()
             || self.view().should_draw()
             || self.tabs.should_draw()
-            || self.search_results.as_ref().map_or(false, |sr| sr.should_draw())
+            || self
+                .search_results
+                .as_ref()
+                .map_or(false, |sr| sr.should_draw())
     }
 
     fn set_should_draw(&mut self) {

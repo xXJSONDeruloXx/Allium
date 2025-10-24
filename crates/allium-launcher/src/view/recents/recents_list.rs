@@ -87,12 +87,6 @@ impl RecentsList {
     pub fn start_search(&mut self) {
         self.search_view.activate();
     }
-
-    pub fn search(&mut self, query: String) -> Result<()> {
-        self.list.sort(RecentsSort::Search(query))?;
-        self.search_view.deactivate();
-        Ok(())
-    }
 }
 
 #[async_trait(?Send)]

@@ -76,13 +76,6 @@ impl Recents {
             Self::List(l) => l.start_search(),
         }
     }
-
-    pub fn search(&mut self, query: String) -> Result<()> {
-        match self {
-            Self::Carousel(c) => c.search(query),
-            Self::List(l) => l.search(query),
-        }
-    }
 }
 
 #[async_trait(?Send)]

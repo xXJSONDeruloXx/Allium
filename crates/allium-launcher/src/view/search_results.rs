@@ -1,5 +1,5 @@
-use std::collections::VecDeque;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -184,7 +184,10 @@ impl SearchResultsView {
                 locale.t("one-search-result")
             } else {
                 let mut map = HashMap::new();
-                map.insert("count".into(), LocaleFluentValue::from(entry_count.to_string()));
+                map.insert(
+                    "count".into(),
+                    LocaleFluentValue::from(entry_count.to_string()),
+                );
                 locale.ta("n-search-results", &map)
             }
         };
@@ -262,6 +265,11 @@ impl SearchResultsView {
         })
     }
 
+    pub fn save(&self) -> SearchResultsState {
+        self.list.save()
+    }
+
+    #[allow(dead_code)] // Reserved for future state restoration
     pub fn load_or_new(
         rect: Rect,
         res: Resources,
@@ -281,10 +289,7 @@ impl SearchResultsView {
         }
     }
 
-    pub fn save(&self) -> SearchResultsState {
-        self.list.save()
-    }
-
+    #[allow(dead_code)] // May be useful for query-based operations
     pub fn query(&self) -> &str {
         &self.query
     }
@@ -298,7 +303,7 @@ impl SearchResultsView {
         let database = self.res.get::<Database>();
         let games = database.search(&new_query, RECENT_GAMES_LIMIT)?;
         let entry_count = games.len();
-        
+
         let sort = SearchResultsSort::Relevance(new_query);
         self.list.sort(sort)?;
 
@@ -309,7 +314,10 @@ impl SearchResultsView {
             self.res.get::<Locale>().t("one-search-result")
         } else {
             let mut map = HashMap::new();
-            map.insert("count".into(), LocaleFluentValue::from(entry_count.to_string()));
+            map.insert(
+                "count".into(),
+                LocaleFluentValue::from(entry_count.to_string()),
+            );
             self.res.get::<Locale>().ta("n-search-results", &map)
         };
         self.result_count.set_text(result_text);

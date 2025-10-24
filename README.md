@@ -11,6 +11,13 @@ The goal of Allium is to replace MainUI (stock UI) with a faster and more user-f
 - Box art
 - Support running on both Miyoo Mini, Miyoo Mini Plus, and Miyoo Mini Flip without changes
 
+## Help and Documentation
+
+Please refer to this README.md and the [Wiki](https://github.com/goweiwen/Allium/wiki) for information on how to setup and use Allium.
+
+[<img width="250" height="250" alt="icons8-book-250" src="https://github.com/user-attachments/assets/c643a3e2-834d-4377-9b7a-0aa879e86ea7" />](https://github.com/goweiwen/Allium/wiki)
+
+
 # Screenshots
 
 <div>

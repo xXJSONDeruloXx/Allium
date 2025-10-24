@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use anyhow::Result;
 use base32::encode;
 use common::command::Command;
-use common::constants::{ALLIUM_SCREENSHOTS_DIR, SAVE_STATE_IMAGE_WIDTH};
+use common::constants::{ALLIUM_SCREENSHOTS_DIR, ALLIUM_SD_ROOT};
 use common::database::Database;
 use common::display::Display;
 use common::game_info::GameInfo;
@@ -142,11 +142,18 @@ impl AlliumMenu<DefaultPlatform> {
                         .update_screenshot_path(game_path, Some(&screenshot_path))
                         .ok();
 
+                    #[cfg(feature = "miyoo")]
                     std::process::Command::new("screenshot")
                         .arg(screenshot_path)
-                        .arg(format!("--width={}", SAVE_STATE_IMAGE_WIDTH))
+                        .arg(format!(
+                            "--width={}",
+                            common::constants::SAVE_STATE_IMAGE_WIDTH
+                        ))
                         .arg("--crop")
                         .spawn()?;
+
+                    #[cfg(feature = "simulator")]
+                    std::fs::copy(ALLIUM_SD_ROOT.join("bg-640x480.png"), screenshot_path)?;
                 }
             }
             command => {

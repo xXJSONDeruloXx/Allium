@@ -182,7 +182,7 @@ impl AlliumLauncher<DefaultPlatform> {
                         use std::os::unix::process::CommandExt;
                         let _ = process::Command::new("/bin/sh")
                             .arg("-c")
-                            .arg("make simulator-menu")
+                            .arg("make simulator bin=allium-menu")
                             .exec();
                     }
 

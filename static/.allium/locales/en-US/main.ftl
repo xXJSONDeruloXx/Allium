@@ -37,6 +37,7 @@ settings-wifi-ntp-enabled = NTP Enabled
 settings-wifi-web-file-explorer = Web File Explorer
 settings-wifi-telnet-enabled = Telnet Enabled
 settings-wifi-ftp-enabled = FTP Enabled
+settings-wifi-syncthing = Syncthing Enabled
 settings-wifi-connecting= Connecting...
 
 settings-clock = Date & Time

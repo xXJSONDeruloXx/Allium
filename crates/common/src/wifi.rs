@@ -18,6 +18,7 @@ pub struct WiFiSettings {
     pub web_file_browser: bool,
     pub telnet: bool,
     pub ftp: bool,
+    pub syncthing: bool,
 }
 
 impl WiFiSettings {
@@ -30,6 +31,7 @@ impl WiFiSettings {
             web_file_browser: false,
             telnet: false,
             ftp: false,
+            syncthing: false,
         }
     }
 
@@ -66,6 +68,10 @@ impl WiFiSettings {
             if self.web_file_browser {
                 info!("Starting Web File Browser...");
                 web_file_browser_on()?;
+            }
+            if self.syncthing {
+                info!("Starting Syncthing...");
+                syncthing_on()?;
             }
         }
         Ok(())
@@ -204,6 +210,16 @@ network={{
             ftp_on()?;
         } else {
             ftp_off()?;
+        }
+        Ok(())
+    }
+
+    pub fn toggle_syncthing(&mut self, enabled: bool) -> Result<()> {
+        self.syncthing = enabled;
+        if self.syncthing {
+            syncthing_on()?;
+        } else {
+            syncthing_off()?;
         }
         Ok(())
     }
@@ -408,6 +424,46 @@ pub fn web_file_browser_off() -> Result<()> {
             .await
             .map_err(|e| {
                 log::error!("dufs-off.sh failed: {}", e);
+                e
+            })
+    });
+    Ok(())
+}
+
+pub fn syncthing_on() -> Result<()> {
+    #[cfg(feature = "miyoo")]
+    tokio::spawn(async {
+        Command::new(crate::constants::ALLIUM_SCRIPTS_DIR.join("syncthing-on.sh"))
+            .spawn()
+            .map_err(|e| {
+                log::error!("failed to spawn syncthing-on.sh: {}", e);
+                e
+            })
+            .unwrap()
+            .wait()
+            .await
+            .map_err(|e| {
+                log::error!("syncthing-on.sh failed: {}", e);
+                e
+            })
+    });
+    Ok(())
+}
+
+pub fn syncthing_off() -> Result<()> {
+    #[cfg(feature = "miyoo")]
+    tokio::spawn(async {
+        Command::new(crate::constants::ALLIUM_SCRIPTS_DIR.join("syncthing-off.sh"))
+            .spawn()
+            .map_err(|e| {
+                log::error!("failed to spawn syncthing-off.sh: {}", e);
+                e
+            })
+            .unwrap()
+            .wait()
+            .await
+            .map_err(|e| {
+                log::error!("syncthing-off.sh failed: {}", e);
                 e
             })
     });

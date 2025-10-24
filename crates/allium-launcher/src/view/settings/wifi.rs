@@ -53,6 +53,7 @@ impl Wifi {
                 locale.t("settings-wifi-web-file-explorer"),
                 locale.t("settings-wifi-telnet-enabled"),
                 locale.t("settings-wifi-ftp-enabled"),
+                locale.t("settings-wifi-syncthing"),
             ],
             vec![
                 Box::new(Toggle::new(Point::zero(), settings.wifi, Alignment::Right)),
@@ -88,6 +89,11 @@ impl Wifi {
                     Alignment::Right,
                 )),
                 Box::new(Toggle::new(Point::zero(), settings.ftp, Alignment::Right)),
+                Box::new(Toggle::new(
+                    Point::zero(),
+                    settings.syncthing,
+                    Alignment::Right,
+                )),
             ],
             res.get::<Stylesheet>().ui_font.size + SELECTION_MARGIN,
         );
@@ -275,6 +281,42 @@ impl View for Wifi {
                         }
                         6 => self.settings.toggle_telnet(val.as_bool().unwrap())?,
                         7 => self.settings.toggle_ftp(val.as_bool().unwrap())?,
+                        8 => {
+                            let enabled = val.as_bool().unwrap();
+                            self.settings.toggle_syncthing(enabled)?;
+                            if enabled {
+                                let (fg_color, bg_color) = {
+                                    let styles = self.res.get::<Stylesheet>();
+                                    (styles.foreground_color, styles.highlight_color)
+                                };
+                                let commands = commands.clone();
+                                tokio::spawn(async move {
+                                    if wifi::wait_for_wifi().await.is_ok()
+                                        && let Some(ip_address) = wifi::ip_address()
+                                    {
+                                        let url = format!("http://{ip_address}:8384/");
+                                        let Ok(code) = QrCode::new(url.as_bytes()) else {
+                                            warn!(
+                                                "Failed to generate QR code for web file explorer"
+                                            );
+                                            return;
+                                        };
+                                        let image = code
+                                            .render::<image::Rgba<u8>>()
+                                            .dark_color(fg_color.into())
+                                            .light_color(bg_color.into())
+                                            .min_dimensions(300, 300)
+                                            .build();
+                                        commands
+                                            .send(Command::ImageToast(image, url, None))
+                                            .await
+                                            .ok();
+                                    }
+                                });
+                            } else {
+                                commands.send(Command::DismissToast).await.ok();
+                            }
+                        }
                         _ => unreachable!("Invalid index"),
                     }
                 }

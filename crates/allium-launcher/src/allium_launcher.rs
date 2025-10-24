@@ -173,7 +173,7 @@ impl AlliumLauncher<DefaultPlatform> {
                 #[cfg(feature = "miyoo")]
                 {
                     use std::os::unix::process::CommandExt;
-                    cmd.exec();
+                    let _ = cmd.exec();
                 }
                 #[cfg(not(feature = "miyoo"))]
                 {

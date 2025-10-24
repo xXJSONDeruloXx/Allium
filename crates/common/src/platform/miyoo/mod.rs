@@ -87,10 +87,10 @@ impl Platform for MiyooPlatform {
             std::process::Command::new("sync").spawn()?.wait()?;
             match self.model {
                 MiyooDeviceModel::Miyoo283 => {
-                    std::process::Command::new("reboot").exec();
+                    let _ = std::process::Command::new("reboot").exec();
                 }
                 MiyooDeviceModel::Miyoo285 | MiyooDeviceModel::Miyoo354 => {
-                    std::process::Command::new("poweroff").exec();
+                    let _ = std::process::Command::new("poweroff").exec();
                 }
             }
         }

@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use anyhow::Result;
 use base32::encode;
 use common::command::Command;
-use common::constants::{ALLIUM_SCREENSHOTS_DIR, ALLIUM_SD_ROOT};
+use common::constants::ALLIUM_SCREENSHOTS_DIR;
 use common::database::Database;
 use common::display::Display;
 use common::game_info::GameInfo;
@@ -153,7 +153,10 @@ impl AlliumMenu<DefaultPlatform> {
                         .spawn()?;
 
                     #[cfg(feature = "simulator")]
-                    std::fs::copy(ALLIUM_SD_ROOT.join("bg-640x480.png"), screenshot_path)?;
+                    std::fs::copy(
+                        common::constants::ALLIUM_SD_ROOT.join("bg-640x480.png"),
+                        screenshot_path,
+                    )?;
                 }
             }
             command => {

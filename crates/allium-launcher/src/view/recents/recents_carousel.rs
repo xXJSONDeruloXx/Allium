@@ -61,6 +61,7 @@ impl RecentsCarousel {
             Rect::new(x, y + y_margin, w, screenshot_height),
             ImageMode::Contain,
         );
+        screenshot.set_border_radius(12);
         screenshot.set_alignment(Alignment::Center);
 
         let game_name = Label::new(

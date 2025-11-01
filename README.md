@@ -136,14 +136,25 @@ make all
 
 For quick testing on real hardware, you can use the deployment targets:
 
-1. Create a `local.mk` file (git-ignored) in the project root:
+1. Create a `.env` file (git-ignored) in the project root:
 ```bash
-cp local.mk.example local.mk
+cp .env.example .env
 ```
 
-2. Edit `local.mk` and set your SD card path:
+2. Edit `.env` and set your SD card path:
 ```makefile
 SDCARD_PATH=/path/to/sdcard  # Adjust for your mount point
+```
+
+`SDCARD_PATH` can point to a local mount, an `sshfs` mount, or a directory you sync with `adb` when testing over Wi-Fi devices. For example:
+```bash
+sshfs user@device:/mnt/SDCARD ~/mnt/miyoo
+SDCARD_PATH=~/mnt/miyoo make deploy
+```
+
+Devices with adb can instead sync artifacts with:
+```bash
+adb push -a dist/. /mnt/SDCARD
 ```
 
 3. Deploy just update files to existing Allium SD Card:

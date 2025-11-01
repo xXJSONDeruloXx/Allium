@@ -29,25 +29,27 @@ lazy_static! {
     pub static ref ALLIUM_FONTS_DIR: PathBuf = ALLIUM_BASE_DIR.join("fonts");
     pub static ref ALLIUM_LOCALES_DIR: PathBuf = ALLIUM_BASE_DIR.join("locales");
     pub static ref ALLIUM_IMAGES_DIR: PathBuf = ALLIUM_BASE_DIR.join("images");
-    pub static ref ALLIUM_SCREENSHOTS_DIR: PathBuf = ALLIUM_SD_ROOT.join("Saves/CurrentProfile/screenshots");
+    pub static ref ALLIUM_PROFILE_DIR: PathBuf = ALLIUM_SD_ROOT.join("Saves/CurrentProfile");
+    pub static ref ALLIUM_SCREENSHOTS_DIR: PathBuf = ALLIUM_PROFILE_DIR.join("screenshots");
+    pub static ref ALLIUM_STATE_DIR: PathBuf = ALLIUM_PROFILE_DIR.join("allium/state");
 
     // Config
     pub static ref ALLIUM_CONFIG_CONSOLES: PathBuf = ALLIUM_BASE_DIR.join("config/consoles.toml");
     pub static ref ALLIUM_CONFIG_CORES: PathBuf = ALLIUM_BASE_DIR.join("config/cores.toml");
 
     // State
-    pub static ref ALLIUMD_STATE: PathBuf = ALLIUM_BASE_DIR.join("state/alliumd.json");
+    pub static ref ALLIUMD_STATE: PathBuf = ALLIUM_STATE_DIR.join("alliumd.json");
     pub static ref ALLIUM_LAUNCHER_STATE: PathBuf =
-        ALLIUM_BASE_DIR.join("state/allium-launcher.json");
+        ALLIUM_STATE_DIR.join("allium-launcher.json");
     pub static ref ALLIUM_MENU_STATE: PathBuf =
-        ALLIUM_BASE_DIR.join("state/allium-menu.json");
-    pub static ref ALLIUM_GAME_INFO: PathBuf = ALLIUM_BASE_DIR.join("state/current_game");
-    pub static ref ALLIUM_STYLESHEET: PathBuf = ALLIUM_BASE_DIR.join("state/stylesheet.json");
-    pub static ref ALLIUM_DISPLAY_SETTINGS: PathBuf = ALLIUM_BASE_DIR.join("state/display.json");
-    pub static ref ALLIUM_LOCALE_SETTINGS: PathBuf = ALLIUM_BASE_DIR.join("state/locale.json");
-    pub static ref ALLIUM_POWER_SETTINGS: PathBuf = ALLIUM_BASE_DIR.join("state/power.json");
-    pub static ref ALLIUM_WIFI_SETTINGS: PathBuf = ALLIUM_BASE_DIR.join("state/wifi.json");
-    pub static ref ALLIUM_TIMEZONE: PathBuf = ALLIUM_BASE_DIR.join("state/timezone");
+        ALLIUM_STATE_DIR.join("allium-menu.json");
+    pub static ref ALLIUM_GAME_INFO: PathBuf = ALLIUM_STATE_DIR.join("current_game");
+    pub static ref ALLIUM_STYLESHEET: PathBuf = ALLIUM_STATE_DIR.join("stylesheet.json");
+    pub static ref ALLIUM_DISPLAY_SETTINGS: PathBuf = ALLIUM_STATE_DIR.join("display.json");
+    pub static ref ALLIUM_LOCALE_SETTINGS: PathBuf = ALLIUM_STATE_DIR.join("locale.json");
+    pub static ref ALLIUM_POWER_SETTINGS: PathBuf = ALLIUM_STATE_DIR.join("power.json");
+    pub static ref ALLIUM_WIFI_SETTINGS: PathBuf = ALLIUM_STATE_DIR.join("wifi.json");
+    pub static ref ALLIUM_TIMEZONE: PathBuf = ALLIUM_STATE_DIR.join("timezone");
 
     // Database
     pub static ref ALLIUM_DATABASE: PathBuf = env::var("ALLIUM_DATABASE")

@@ -6,7 +6,7 @@ TOOLCHAIN := mholdg16/miyoomini-toolchain:latest
 
 CROSS_TARGET_TRIPLE := arm-unknown-linux-gnueabihf
 
--include local.mk
+-include .env
 
 PLATFORM := $(shell uname -m)
 ifeq ($(PLATFORM),arm64)
@@ -127,17 +127,20 @@ bump-version: lint
 .PHONY: deploy
 deploy:
 ifndef SDCARD_PATH
-	$(error SDCARD_PATH is not set. Create a local.mk file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
+	$(error SDCARD_PATH is not set. Create a .env file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
 endif
 	@echo "Deploying to $(SDCARD_PATH)..."
-	rsync -av --delete $(DIST_DIR)/.allium $(DIST_DIR)/.tmp_update $(DIST_DIR)/Apps $(SDCARD_PATH)/
+	rsync -av "$(DIST_DIR)/.allium" "$(DIST_DIR)/.tmp_update" "$(DIST_DIR)/Apps" "$(SDCARD_PATH)/"
+	rsync -av "$(DIST_DIR)/Saves/CurrentProfile/allium/" "$(SDCARD_PATH)/Saves/CurrentProfile/allium/"
 	@echo "Deployment complete! Remember to eject your SD card properly."
 
 .PHONY: deploy-all
 deploy-all:
 ifndef SDCARD_PATH
-	$(error SDCARD_PATH is not set. Create a local.mk file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
+	$(error SDCARD_PATH is not set. Create a .env file with SDCARD_PATH=/path/to/sdcard or set it as an environment variable)
 endif
 	@echo "Deploying full dist to $(SDCARD_PATH)..."
-	rsync -av --delete $(DIST_DIR)/ $(SDCARD_PATH)/
+	@for dir in .allium .tmp_update Apps RetroArch Saves/CurrentProfile/allium; do \
+		rsync -av "$(DIST_DIR)/$$dir/" "$(SDCARD_PATH)/$$dir/"; \
+	done
 	@echo "Full deployment complete! Remember to eject your SD card properly."
